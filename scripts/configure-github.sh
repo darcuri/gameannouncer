@@ -75,6 +75,11 @@ ruleset "release tags are immutable" <<'EOF'
 }
 EOF
 
+# CI on pull requests from forks waits for approval, so outside code never runs unreviewed.
+gh api -X PUT "repos/$REPO/actions/permissions/fork-pr-contributor-approval" \
+    -f approval_policy=all_external_contributors >/dev/null
+echo "  fork pull request CI: needs approval for all outside contributors"
+
 # Secret scanning blocks pushes that contain credentials; free on public repos.
 gh api -X PATCH "repos/$REPO" --input - >/dev/null <<'EOF'
 { "security_and_analysis": {
