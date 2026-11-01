@@ -23,6 +23,18 @@ public struct GameEvent: Sendable, Equatable {
     public var observedAt: Date
     /// A touchdown posted before its extra point or two-point try; the score will change.
     public var tryPending = false
+
+    public init(kind: Kind, game: GameState, team: GameState.Side?, play: Play?,
+                awayScore: Int, homeScore: Int, observedAt: Date, tryPending: Bool = false) {
+        self.kind = kind
+        self.game = game
+        self.team = team
+        self.play = play
+        self.awayScore = awayScore
+        self.homeScore = homeScore
+        self.observedAt = observedAt
+        self.tryPending = tryPending
+    }
 }
 
 /// Turns successive scoreboard and play-by-play snapshots into events. Pure state machine:

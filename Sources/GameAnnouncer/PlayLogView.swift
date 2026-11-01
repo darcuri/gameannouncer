@@ -4,7 +4,8 @@ import SwiftUI
 /// Everything GameAnnouncer noticed, newest first. Spoken entries get a speaker icon.
 struct PlayLogView: View {
     @Environment(LiveSession.self) private var session
-    @State private var scoringOnly = true
+    // The demo opens on every play type so it shows the full range of announcements.
+    @State private var scoringOnly = !LiveSession.isDemo
 
     var body: some View {
         let entries = session.log.filter { !scoringOnly || SpokenCategory($0.event.kind) == .scoring }

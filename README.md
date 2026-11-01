@@ -8,13 +8,43 @@ Live fantasy football scoring for [MyFantasyLeague](https://www.myfantasyleague.
 
 ## What it does
 
-- **Fantasy Games:** every matchup in your league, with live scores. Select one to see both teams' starters side by side, with points, NFL team, game clock, and who has the ball or is in the red zone.
-- **NFL Games:** every game this week with score, clock, possession and red zone, plus which of your starters and your opponents' are playing in it.
-- **Touchdowns & Plays:** a running log of scores, turnovers, sacks and red-zone trips.
-- **Announcements:** spoken with macOS's built-in voices. For example:
-  - "Touchdown, Carolina Panthers Defense, Jaycee Horn, 46 yard interception."
-  - "Sack, Buffalo Bills, Joe Fagnano sacked by T.J. Parker for 2 yards."
-- **Announcement settings:** announce every NFL game, only games involving your matchup's starters, or only plays by those starters. Each type of announcement can be turned off, and you can pick the voice.
+*Screenshots use a fictional demo league (`GameAnnouncer -demo YES`).*
+
+### Fantasy Games
+
+Every matchup in your league, with live scores. Select one to see both teams' starters side by side, with points, game clock, and who has the ball (🏈) or is in the red zone (red 🏈).
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/fantasy-dark.png">
+  <img alt="Fantasy Games tab: the league's matchups, with both teams' starters, live points and game status" src="docs/screenshots/fantasy-light.png">
+</picture>
+
+### NFL Games
+
+Every game this week with score, clock, possession and red zone, plus which of your starters and your opponents' are playing in it.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/nfl-dark.png">
+  <img alt="NFL Games tab: live, final and upcoming games with red-zone badges and each game's fantasy starters" src="docs/screenshots/nfl-light.png">
+</picture>
+
+### Touchdowns & Plays
+
+A running log of scores, turnovers, sacks and red-zone trips, tagged when they involve your players or your opponent's.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/plays-dark.png">
+  <img alt="Touchdowns & Plays tab: a log of touchdowns, field goals, sacks, turnovers and red-zone trips" src="docs/screenshots/plays-light.png">
+</picture>
+
+### Announcements
+
+Every play in the log is spoken with macOS's built-in voices, for example:
+
+- "Touchdown, Seattle Seahawks Defense, Kendrick Monroe, 38 yard interception."
+- "Sack, Buffalo Bills, Caleb Dunn sacked by Victor Okafor for 7 yards."
+
+You can announce every NFL game, only games with your matchup's starters, or only plays by those starters. Each type of announcement can be turned off, and you can pick the voice.
 
 Scores refresh every 30 seconds while games are on. Between game windows, the app waits until shortly before the next kickoff.
 
@@ -57,6 +87,16 @@ MFL_APIKEY=your-key swift run GameAnnouncer
 swift test                            # unit tests
 swift run gameannouncer-record --league ID  # record live API responses to Fixtures/ during games
 swift run gameannouncer-replay Fixtures/2026-W08 --franchise ID --speak   # replay recordings through the announcer
+swift run GameAnnouncer -demo YES     # fictional league; no network, saves no settings
+```
+
+To regenerate the screenshots (needs Screen Recording permission for your terminal):
+
+```bash
+for look in light dark; do
+  swift run GameAnnouncer -demo YES -snapshotDir /tmp/shots -snapshotAppearance $look
+done
+for f in /tmp/shots/*.png; do sips -Z 1600 "$f" --out "docs/screenshots/$(basename "$f")"; done
 ```
 
 [ARCHITECTURE.md](ARCHITECTURE.md) covers the data sources, the event detection and what was learned from recording live games.

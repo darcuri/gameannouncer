@@ -43,25 +43,34 @@ struct LogEntry: Identifiable {
 @MainActor
 @Observable
 final class LiveSession {
-    // MARK: Settings (persisted)
+    /// `-demo YES`: show DemoData instead of a real league, with no network access and
+    /// without saving any settings.
+    static let isDemo = UserDefaults.standard.bool(forKey: "demo")
 
-    var leagueID: String? = UserDefaults.standard.string(forKey: "leagueID") {
-        didSet { UserDefaults.standard.set(leagueID, forKey: "leagueID") }
+    // MARK: Settings (persisted, except in demo mode)
+
+    var leagueID: String? = isDemo ? "DEMO" : UserDefaults.standard.string(forKey: "leagueID") {
+        didSet { Self.save(leagueID, "leagueID") }
     }
-    var franchiseID: String? = UserDefaults.standard.string(forKey: "franchiseID") {
-        didSet { UserDefaults.standard.set(franchiseID, forKey: "franchiseID") }
+    var franchiseID: String? = isDemo ? DemoData.myFranchise : UserDefaults.standard.string(forKey: "franchiseID") {
+        didSet { Self.save(franchiseID, "franchiseID") }
     }
     var scope = FantasyContext.Scope(rawValue: UserDefaults.standard.string(forKey: "scope") ?? "") ?? .myGames {
-        didSet { UserDefaults.standard.set(scope.rawValue, forKey: "scope") }
+        didSet { Self.save(scope.rawValue, "scope") }
     }
-    var muted = UserDefaults.standard.bool(forKey: "muted") {
+    var muted = isDemo || UserDefaults.standard.bool(forKey: "muted") {
         didSet {
-            UserDefaults.standard.set(muted, forKey: "muted")
+            Self.save(muted, "muted")
             if muted { speaker.stop() }
         }
     }
     var mutedCategories = Set((UserDefaults.standard.stringArray(forKey: "mutedCategories") ?? []).compactMap(SpokenCategory.init)) {
-        didSet { UserDefaults.standard.set(mutedCategories.map(\.rawValue), forKey: "mutedCategories") }
+        didSet { Self.save(mutedCategories.map(\.rawValue), "mutedCategories") }
+    }
+
+    private static func save(_ value: Any?, _ key: String) {
+        guard !isDemo else { return }
+        UserDefaults.standard.set(value, forKey: key)
     }
 
     var isConfigured: Bool { leagueID != nil && franchiseID != nil }
@@ -98,7 +107,28 @@ final class LiveSession {
 
     func start() {
         guard loop == nil, isConfigured else { return }
+        if Self.isDemo {
+            loadDemo()
+            return
+        }
         loop = Task { await run() }
+    }
+
+    private func loadDemo() {
+        league = DemoData.league
+        week = 8
+        players = DemoData.players
+        names = PlayerNames(DemoData.players)
+        liveScoring = DemoData.liveScoring
+        context = FantasyContext(franchiseID: DemoData.myFranchise, liveScoring: DemoData.liveScoring,
+                                 players: DemoData.players)
+        games = DemoData.games
+        for event in DemoData.events { record(event) }
+        lastUpdate = DemoData.now
+        // Start the refresh countdown partway through, like a live session between updates.
+        refreshInterval = 30
+        nextRefresh = Date.now.addingTimeInterval(19)
+        statusMessage = "Live"
     }
 
     func restart() {

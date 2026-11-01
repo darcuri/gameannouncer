@@ -26,6 +26,7 @@ struct GameAnnouncerApp: App {
             NSApplication.shared.setActivationPolicy(.regular)
             NSApplication.shared.applicationIconImage = AppIcon.image()
         }
+        Snapshots.applyAppearance()
         _session = State(initialValue: LiveSession())
     }
 

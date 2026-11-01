@@ -29,6 +29,14 @@ public struct GameState: Sendable, Equatable {
         public var location: String  // "Buffalo"
         public var nickname: String  // "Bills"
         public var score: Int
+
+        public init(espnID: String, team: NFLTeam, location: String, nickname: String, score: Int) {
+            self.espnID = espnID
+            self.team = team
+            self.location = location
+            self.nickname = nickname
+            self.score = score
+        }
     }
 
     public var id: String
@@ -43,6 +51,20 @@ public struct GameState: Sendable, Equatable {
     /// possession and red-zone fields describe the try, not a drive.
     public var isLiveDown = true
     public var kickoff: Date? = nil
+
+    public init(id: String, away: Side, home: Side, phase: Phase, period: Int, clock: String,
+                possessionESPNID: String?, inRedZone: Bool, isLiveDown: Bool = true, kickoff: Date? = nil) {
+        self.id = id
+        self.away = away
+        self.home = home
+        self.phase = phase
+        self.period = period
+        self.clock = clock
+        self.possessionESPNID = possessionESPNID
+        self.inRedZone = inRedZone
+        self.isLiveDown = isLiveDown
+        self.kickoff = kickoff
+    }
 
     public var teams: [NFLTeam] { [away.team, home.team] }
 

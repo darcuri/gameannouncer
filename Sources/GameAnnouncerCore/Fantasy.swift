@@ -102,7 +102,10 @@ public struct PlayerNames: Sendable {
 
 /// MFL `liveScoring` export.
 public struct LiveScoring: Decodable, Sendable {
-    public struct Matchup: Sendable { public let franchises: [Franchise] }
+    public struct Matchup: Sendable {
+        public let franchises: [Franchise]
+        public init(franchises: [Franchise]) { self.franchises = franchises }
+    }
     public struct Franchise: Sendable {
         public let id: String
         public let score: Double
@@ -112,6 +115,16 @@ public struct LiveScoring: Decodable, Sendable {
         public let players: [PlayerScore]
         public var starters: [PlayerScore] { players.filter { $0.isStarter } }
         public var bench: [PlayerScore] { players.filter { !$0.isStarter } }
+
+        public init(id: String, score: Double, isHome: Bool, playersYetToPlay: Int,
+                    playersCurrentlyPlaying: Int, players: [PlayerScore]) {
+            self.id = id
+            self.score = score
+            self.isHome = isHome
+            self.playersYetToPlay = playersYetToPlay
+            self.playersCurrentlyPlaying = playersCurrentlyPlaying
+            self.players = players
+        }
     }
     public struct PlayerScore: Sendable {
         public let id: String
@@ -119,9 +132,18 @@ public struct LiveScoring: Decodable, Sendable {
         public let isStarter: Bool
         /// 3600 before kickoff, 0 when the game is over (or a bye).
         public let gameSecondsRemaining: Int
+
+        public init(id: String, score: Double, isStarter: Bool, gameSecondsRemaining: Int) {
+            self.id = id
+            self.score = score
+            self.isStarter = isStarter
+            self.gameSecondsRemaining = gameSecondsRemaining
+        }
     }
 
     public let matchups: [Matchup]
+
+    public init(matchups: [Matchup]) { self.matchups = matchups }
 
     /// Matchups this franchise plays in. Some leagues schedule more than one per week.
     public func matchups(for franchiseID: String) -> [Matchup] {
@@ -168,10 +190,16 @@ public struct FantasyLeague: Decodable, Sendable {
     public struct Franchise: Sendable, Identifiable {
         public let id: String
         public let name: String
+        public init(id: String, name: String) { self.id = id; self.name = name }
     }
 
     public let name: String
     public let franchises: [Franchise]
+
+    public init(name: String, franchises: [Franchise]) {
+        self.name = name
+        self.franchises = franchises
+    }
 
     public func franchiseName(_ id: String) -> String {
         franchises.first { $0.id == id }?.name ?? "Team \(id)"
