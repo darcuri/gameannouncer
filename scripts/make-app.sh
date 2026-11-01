@@ -1,11 +1,16 @@
 #!/bin/sh
-# Builds dist/GameAnnouncer.app: a release build of the GameAnnouncer target wrapped in an app bundle,
-# with the icon rendered from AppIcon.swift. Usage: scripts/make-app.sh [--open]
+# Builds dist/GameAnnouncer.app: a universal (Apple Silicon + Intel) release build of the
+# GameAnnouncer target wrapped in an app bundle, with the icon rendered from AppIcon.swift.
+#
+# Usage: scripts/make-app.sh [--open | --zip]
+#   --open  open the app when done
+#   --zip   also write dist/GameAnnouncer-<version>.zip and its .sha256, for a release
 set -eu
 cd "$(dirname "$0")/.."
 
-swift build -c release --product GameAnnouncer
-BIN="$(swift build -c release --show-bin-path)/GameAnnouncer"
+ARCHS="--arch arm64 --arch x86_64"
+swift build -c release --product GameAnnouncer $ARCHS
+BIN="$(swift build -c release $ARCHS --show-bin-path)/GameAnnouncer"
 
 APP=dist/GameAnnouncer.app
 rm -rf "$APP"
@@ -26,10 +31,23 @@ done
 iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
 rm -rf "$WORK"
 
-# Ad-hoc signature so Gatekeeper treats it as one sealed app on this Mac.
+# Ad-hoc signature: seals the bundle, but isn't a Developer ID signature, so downloaded
+# copies still need "Open Anyway" until releases are notarized.
 codesign --force --sign - "$APP"
-echo "Built $APP"
+echo "Built $APP ($(lipo -archs "$APP/Contents/MacOS/GameAnnouncer"))"
 
-if [ "${1:-}" = "--open" ]; then
+case "${1:-}" in
+--open)
     open "$APP"
-fi
+    ;;
+--zip)
+    VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Support/Info.plist)"
+    ZIP="dist/GameAnnouncer-$VERSION.zip"
+    rm -f "$ZIP" "$ZIP.sha256"
+    # ditto keeps the bundle's symlinks, permissions and signature intact; plain zip doesn't.
+    ditto -c -k --keepParent "$APP" "$ZIP"
+    (cd dist && shasum -a 256 "$(basename "$ZIP")" > "$(basename "$ZIP").sha256")
+    echo "Wrote $ZIP"
+    cat "$ZIP.sha256"
+    ;;
+esac
