@@ -1,0 +1,10 @@
+# Recorded live API responses (large, regenerated each game day)
+Fixtures/
+
+# SwiftPM / Xcode
+.build/
+.swiftpm/
+*.xcodeproj/xcuserdata/
+DerivedData/
+
+.DS_Store
