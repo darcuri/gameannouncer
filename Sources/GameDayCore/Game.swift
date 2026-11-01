@@ -39,8 +39,29 @@ public struct GameState: Sendable, Equatable {
     public var clock: String
     public var possessionESPNID: String?
     public var inRedZone: Bool
+    public var kickoff: Date? = nil
 
     public var teams: [NFLTeam] { [away.team, home.team] }
+
+    /// "Q3 4:12", "Halftime", "Final", "OT 2:00", or the kickoff time before the game.
+    public var statusText: String {
+        switch phase {
+        case .scheduled:
+            return kickoff?.formatted(.dateTime.weekday(.abbreviated).hour().minute()) ?? "Scheduled"
+        case .halftime:
+            return "Halftime"
+        case .final:
+            return period > 4 ? "Final/OT" : "Final"
+        case .live:
+            return "\(period > 4 ? "OT" : "Q\(period)") \(clock)"
+        }
+    }
+
+    public func side(for team: NFLTeam) -> Side? {
+        away.team == team ? away : home.team == team ? home : nil
+    }
+
+    public var possessionTeam: NFLTeam? { side(espnID: possessionESPNID)?.team }
 
     public func side(espnID: String?) -> Side? {
         if away.espnID == espnID { return away }

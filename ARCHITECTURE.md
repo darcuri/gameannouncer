@@ -53,6 +53,9 @@ Sources: [MFL GameDay page](https://home.myfantasyleague.com/game-day/), [MFL AP
 
 - `gameday-record`: saves live responses to `Fixtures/` (ignored by git).
 - `gameday-replay <week dir> --franchise <franchise ID> [--scope all|myGames|myPlayers] [--speak] [--from 13:00 --to 14:00]`: replays recordings through `EventDiffer` and prints or speaks the announcements.
+- `GameDay` (SwiftUI app): `swift run GameDay -leagueID <league ID> -franchiseID <franchise ID>`. With no arguments it shows a league setup screen, and choices persist in UserDefaults. Add `-muted YES` for silent testing, and `-snapshotDir <folder>` to save a PNG of each tab after the first update. The snapshots draw the app's own view hierarchy and need no Screen Recording permission, but they render the tab bar blank.
+  - Built with SwiftPM because only the Command Line Tools are installed. In this SDK `@State` is a macro whose plugin (SwiftUIMacros) ships only with Xcode, so views use `@ViewState`, a thin `DynamicProperty` wrapper around `State`.
+  - Tabs follow the original's documented views: Fantasy Games (the matchup list, with each matchup's starters side by side), NFL Games (score, clock, possession, red zone, and your and your opponents' starters in each game), and Touchdowns & Plays (the event log, with spoken entries marked). The status bar has the original's countdown to the next refresh.
 - `scripts/test.sh`: runs the tests. The Command Line Tools intermittently fail to find the Swift Testing macro plugin; the script passes its path explicitly.
 
 ## Proposed architecture

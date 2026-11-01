@@ -12,6 +12,7 @@ public struct ESPNScoreboard: Decodable, Sendable {
 
 public struct ESPNEvent: Decodable, Sendable {
     public let id: String
+    public let date: String?   // "2026-11-01T18:00Z" (no seconds, so not plain ISO 8601)
     public let shortName: String
     public let status: ESPNStatus
     public let competitions: [ESPNCompetition]
@@ -160,7 +161,19 @@ extension ESPNEvent {
             period: status.period ?? 0,
             clock: status.displayClock ?? "",
             possessionESPNID: situation?.possession,
-            inRedZone: situation?.isRedZone ?? false
+            inRedZone: situation?.isRedZone ?? false,
+            kickoff: date.flatMap(Self.parseDate)
         )
+    }
+
+    private static func parseDate(_ s: String) -> Date? {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(identifier: "UTC")
+        for format in ["yyyy-MM-dd'T'HH:mmX", "yyyy-MM-dd'T'HH:mm:ssX"] {
+            f.dateFormat = format
+            if let d = f.date(from: s) { return d }
+        }
+        return nil
     }
 }

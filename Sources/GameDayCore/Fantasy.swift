@@ -106,13 +106,19 @@ public struct LiveScoring: Decodable, Sendable {
     public struct Franchise: Sendable {
         public let id: String
         public let score: Double
+        public let isHome: Bool
+        public let playersYetToPlay: Int
+        public let playersCurrentlyPlaying: Int
         public let players: [PlayerScore]
         public var starters: [PlayerScore] { players.filter { $0.isStarter } }
+        public var bench: [PlayerScore] { players.filter { !$0.isStarter } }
     }
     public struct PlayerScore: Sendable {
         public let id: String
         public let score: Double
         public let isStarter: Bool
+        /// 3600 before kickoff, 0 when the game is over (or a bye).
+        public let gameSecondsRemaining: Int
     }
 
     public let matchups: [Matchup]
@@ -129,9 +135,12 @@ public struct LiveScoring: Decodable, Sendable {
             struct Players: Decodable { let player: OneOrMany<P> }
             let id: String
             let score: String?
+            let isHome: String?
+            let playersYetToPlay: String?
+            let playersCurrentlyPlaying: String?
             let players: Players?
         }
-        struct P: Decodable { let id: String; let score: String?; let status: String? }
+        struct P: Decodable { let id: String; let score: String?; let status: String?; let gameSecondsRemaining: String? }
         let liveScoring: Root
     }
 
@@ -141,12 +150,47 @@ public struct LiveScoring: Decodable, Sendable {
                 Franchise(
                     id: f.id,
                     score: Double(f.score ?? "") ?? 0,
+                    isHome: f.isHome == "1",
+                    playersYetToPlay: Int(f.playersYetToPlay ?? "") ?? 0,
+                    playersCurrentlyPlaying: Int(f.playersCurrentlyPlaying ?? "") ?? 0,
                     players: (f.players?.player.values ?? []).map {
-                        PlayerScore(id: $0.id, score: Double($0.score ?? "") ?? 0, isStarter: $0.status == "starter")
+                        PlayerScore(id: $0.id, score: Double($0.score ?? "") ?? 0, isStarter: $0.status == "starter",
+                                    gameSecondsRemaining: Int($0.gameSecondsRemaining ?? "") ?? 0)
                     }
                 )
             })
         }
+    }
+}
+
+/// MFL `league` export: just what the display needs.
+public struct FantasyLeague: Decodable, Sendable {
+    public struct Franchise: Sendable, Identifiable {
+        public let id: String
+        public let name: String
+    }
+
+    public let name: String
+    public let franchises: [Franchise]
+
+    public func franchiseName(_ id: String) -> String {
+        franchises.first { $0.id == id }?.name ?? "Team \(id)"
+    }
+
+    private struct Wire: Decodable {
+        struct League: Decodable {
+            struct Franchises: Decodable { let franchise: OneOrMany<F> }
+            struct F: Decodable { let id: String; let name: String }
+            let name: String
+            let franchises: Franchises
+        }
+        let league: League
+    }
+
+    public init(from decoder: Decoder) throws {
+        let league = try Wire(from: decoder).league
+        name = league.name
+        franchises = league.franchises.franchise.values.map { Franchise(id: $0.id, name: $0.name) }
     }
 }
 
