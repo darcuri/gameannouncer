@@ -90,6 +90,9 @@ struct SummarySignature: Decodable, Equatable {
     let scoringPlays: [Play]?
 }
 
+// Flush each log line even when stdout is redirected to a file.
+setlinebuf(stdout)
+
 let options = Options.parse(CommandLine.arguments)
 let userAgent = ProcessInfo.processInfo.environment["MFL_USER_AGENT"] ?? "GameDayMac-spike/0.1"
 let mfl = MFLClient(

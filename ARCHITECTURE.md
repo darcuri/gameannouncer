@@ -33,6 +33,12 @@ Sources: [MFL GameDay page](https://home.myfantasyleague.com/game-day/), [MFL AP
 - **Rate limits** are unpublished and lower during NFL games. Exceeding them returns HTTP 429. Register a client and send a fixed **User-Agent** to get about 2.5× the limit. Space requests about 1 s apart, don't retry on 429, and back off instead.
 - This sets the poll budget. Per league every ~30 s: 1× `liveScoring`, plus 1× `nfl_sched` (conditional GET). Everything else gets cached.
 
+### Findings from the first live recording (2026-11-01, week 8)
+
+- **`nfl_sched_{W}.json` is too slow for announcements.** It showed every game as not started until at least 12 minutes after kickoff. Later it ran about 10 minutes behind ESPN: at 18:55 UTC its `lastUpdate` was 18:45:53, and it still showed the end of the first quarter while ESPN was in the second quarter. **ESPN's scoreboard has to be the main source for NFL game state** (score, clock, possession, red zone). Keep MFL's file only as a backup and to cross-check its week and game list.
+- **`liveScoring` is reasonably current.** Fantasy points changed within about 30 seconds of the ESPN scoreboard.
+- **Not every fantasy-point jump is a play.** At kickoff, every starting defense jumped by about 10 points, from "0 points allowed" scoring. The comparison logic must not treat fantasy-point changes alone as scoring plays. Announce from NFL events, then attach the fantasy impact.
+
 ## Proposed architecture
 
 Use native **Swift + SwiftUI**, macOS 14+. The app runs as a window plus a menu-bar extra, and speech comes from `AVSpeechSynthesizer`, with no extra dependencies. (Electron or Tauri would work, but they add weight and give worse system-voice access for no gain.)
