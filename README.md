@@ -1,0 +1,73 @@
+# GameDay for Mac
+
+Live fantasy football scoring for [MyFantasyLeague](https://www.myfantasyleague.com) leagues, with spoken play-by-play announcements. It's inspired by MFL's old Windows GameDay program, which called out touchdowns, field goals, red-zone trips and sacks as they happened.
+
+> Not affiliated with or endorsed by MyFantasyLeague, ESPN or the NFL.
+
+## What it does
+
+- **Fantasy Games:** every matchup in your league, with live scores. Select one to see both teams' starters side by side, with points, NFL team, game clock, and who has the ball or is in the red zone.
+- **NFL Games:** every game this week with score, clock, possession and red zone, plus which of your starters and your opponents' are playing in it.
+- **Touchdowns & Plays:** a running log of scores, turnovers, sacks and red-zone trips.
+- **Announcements:** spoken with macOS's built-in voices. For example:
+  - "Touchdown, Carolina Panthers Defense, Jaycee Horn, 46 yard interception."
+  - "Sack, Buffalo Bills, Joe Fagnano sacked by T.J. Parker for 2 yards."
+- **Announcement settings:** announce every NFL game, only games involving your matchup's starters, or only plays by those starters. Each type of announcement can be turned off, and you can pick the voice.
+
+Scores refresh every 30 seconds while games are on. Between game windows, the app waits until shortly before the next kickoff.
+
+## Requirements
+
+- macOS 14 or later
+- Xcode 26 or later to build. The Command Line Tools alone aren't enough, because SwiftUI's `@State` macro ships only with Xcode.
+
+## Build and run
+
+```bash
+git clone https://github.com/darcuri/gameday.git
+cd gameday
+scripts/make-app.sh --open   # builds and opens dist/GameDay.app
+```
+
+Or run it straight from the source tree:
+
+```bash
+swift run GameDay
+```
+
+On first launch, enter your league ID and pick your team.
+
+### Finding your league ID
+
+Open your league's home page on myfantasyleague.com. The league ID is the number at the end of the address, for example `https://www##.myfantasyleague.com/2026/home/12345`.
+
+### Private leagues
+
+Public leagues work as is. For a private league, get an API key from **Help → Developer's API** on your league's site. Then run the app with that key in the `MFL_APIKEY` environment variable:
+
+```bash
+MFL_APIKEY=your-key swift run GameDay
+```
+
+## Development
+
+```bash
+swift test                            # unit tests
+swift run gameday-record --league ID  # record live API responses to Fixtures/ during games
+swift run gameday-replay Fixtures/2026-W08 --franchise ID --speak   # replay recordings through the announcer
+```
+
+[ARCHITECTURE.md](ARCHITECTURE.md) covers the data sources, the event detection and what was learned from recording live games.
+
+## Data sources
+
+- **MyFantasyLeague's [public API](https://api.myfantasyleague.com/2026/api_info):** league, rosters, players and live fantasy scoring.
+- **ESPN's public scoreboard and game summary endpoints:** NFL game state and play-by-play. These are undocumented and may change without notice.
+
+## Privacy
+
+Your league ID, team and preferences are stored only on your Mac. The app talks only to MyFantasyLeague and ESPN, and collects nothing.
+
+## License
+
+[MIT](LICENSE)
