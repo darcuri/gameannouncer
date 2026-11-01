@@ -120,7 +120,7 @@ private let henry = FantasyPlayer(id: "3", name: "Henry, Derrick", position: "RB
     // Involving one of my players makes it relevant, but the announcement is just the play and score.
     let context = FantasyContext(myStarters: [chase], opponentStarters: [henry])
     #expect(context.involvement(in: event).map(\.player) == [chase])
-    #expect(Announcement.text(for: event) == "Touchdown, Buffalo! Josh Allen 5 yard run. Bills lead 7 to 0.")
+    #expect(Announcement.text(for: event) == "Touchdown, Buffalo Bills! Josh Allen 5 yard run. Buffalo Bills lead 7 to 0.")
 }
 
 @Test func touchdownBeforeTryOmitsScoreThenReportsMiss() throws {
@@ -129,14 +129,14 @@ private let henry = FantasyPlayer(id: "3", name: "Henry, Derrick", position: "RB
     let td = play("1", .touchdown, home: 6, text: "Josh Allen 5 Yd Rush ")
     let announced = try #require(differ.ingest(plays: [td], gameID: "G1", at: t0).first)
     #expect(announced.tryPending)
-    #expect(Announcement.text(for: announced) == "Touchdown, Buffalo! Josh Allen 5 yard run.")
+    #expect(Announcement.text(for: announced) == "Touchdown, Buffalo Bills! Josh Allen 5 yard run.")
     // Still the last play: nothing to conclude yet.
     #expect(differ.ingest(plays: [td], gameID: "G1", at: t0 + 30).isEmpty)
     // Kickoff follows with the score unchanged: the try failed.
     let kickoff = play("2", .other, home: 6, offense: "33")
     let followUp = differ.ingest(plays: [td, kickoff], gameID: "G1", at: t0 + 60)
     #expect(followUp.map(\.kind) == [.tryFailed])
-    #expect(Announcement.text(for: followUp[0]) == "Buffalo misses the try after the touchdown. Bills lead 6 to 0.")
+    #expect(Announcement.text(for: followUp[0]) == "Buffalo Bills misses the try after the touchdown. Buffalo Bills lead 6 to 0.")
 }
 
 @Test func madeKickAfterPendingTouchdownIsSilent() {
@@ -163,9 +163,18 @@ private let henry = FantasyPlayer(id: "3", name: "Henry, Derrick", position: "RB
     #expect(differ.ingest(scoreboard: [game(home: 3, possession: "2", redZone: true)], at: t0).isEmpty)
 }
 
-@Test func twoTeamCitiesUseNicknames() {
+@Test func teamsUseFullNames() {
     let jets = GameState.Side(espnID: "20", team: NFLTeam(mfl: "NYJ"), location: "New York", nickname: "Jets", score: 0)
-    #expect(Announcement.spokenName(jets) == "the Jets")
+    #expect(Announcement.fullName(jets) == "New York Jets")
+}
+
+@Test func redZoneAndGameStatusUseFullNames() throws {
+    var differ = EventDiffer()
+    _ = differ.ingest(scoreboard: [game(phase: .scheduled, possession: "2")], at: t0)
+    let kickoff = try #require(differ.ingest(scoreboard: [game(possession: "2")], at: t0).first)
+    #expect(Announcement.text(for: kickoff) == "Kickoff: Baltimore Ravens at Buffalo Bills.")
+    let redZone = try #require(differ.ingest(scoreboard: [game(possession: "2", redZone: true)], at: t0).first)
+    #expect(Announcement.text(for: redZone) == "Buffalo Bills in the red zone against the Baltimore Ravens.")
 }
 
 @Test func failedExtraPointIsMentioned() throws {
@@ -177,7 +186,7 @@ private let henry = FantasyPlayer(id: "3", name: "Henry, Derrick", position: "RB
     // Opponent involvement makes the play relevant but isn't spoken.
     #expect(context.isRelevant(event, scope: .myPlayers))
     #expect(Announcement.text(for: event)
-        == "Touchdown, Baltimore! Derrick Henry 12 yard run. Extra point no good. Ravens lead 6 to 0.")
+        == "Touchdown, Baltimore Ravens! Derrick Henry 12 yard run. Extra point no good. Baltimore Ravens lead 6 to 0.")
 }
 
 @Test func teamDefenseNotCreditedForOffensiveTouchdown() throws {
@@ -270,20 +279,37 @@ private func announce(_ kind: PlayKind, home: Int = 0, offense: String, _ text: 
 
 @Test func defensiveTouchdownFormat() throws {
     #expect(try announce(.touchdown, home: 7, offense: "33", "Rayuan Lane III 92 Yd Interception Return (Tyler Bass Kick)")
-        == "Touchdown, Buffalo Bills Defense, Rayuan Lane III, 92 yard interception. Bills lead 7 to 0.")
+        == "Touchdown, Buffalo Bills Defense, Rayuan Lane III, 92 yard interception. Buffalo Bills lead 7 to 0.")
     #expect(try announce(.touchdown, home: 7, offense: "33", "Terrel Bernard 23 Yd Fumble Return (Tyler Bass Kick)")
-        == "Touchdown, Buffalo Bills Defense, Terrel Bernard, 23 yard fumble recovery. Bills lead 7 to 0.")
+        == "Touchdown, Buffalo Bills Defense, Terrel Bernard, 23 yard fumble recovery. Buffalo Bills lead 7 to 0.")
 }
 
 @Test func returnTouchdownFormat() throws {
     #expect(try announce(.touchdown, home: 7, offense: "33", "Dylan Laube 95 Yd Kickoff Return (Matt Gay Kick)")
-        == "Touchdown, Buffalo Bills, Dylan Laube, 95 yard kickoff return. Bills lead 7 to 0.")
+        == "Touchdown, Buffalo Bills, Dylan Laube, 95 yard kickoff return. Buffalo Bills lead 7 to 0.")
     #expect(try announce(.touchdown, home: 7, offense: "33", "Khalil Shakir 80 Yd Punt Return (Tyler Bass Kick)")
-        == "Touchdown, Buffalo Bills, Khalil Shakir, 80 yard punt return. Bills lead 7 to 0.")
+        == "Touchdown, Buffalo Bills, Khalil Shakir, 80 yard punt return. Buffalo Bills lead 7 to 0.")
 }
 
 @Test func offenseRecoveringOwnFumbleForTouchdownIsNotDefense() throws {
     #expect(try announce(.touchdown, home: 7, offense: "2",
                          "Javonte Williams 2 Yd Rush Javonte Williams Fumble James Mitchell 0 Yd Fumble Recovery (Brandon Aubrey Kick)")
-        == "Touchdown, Buffalo Bills, James Mitchell, fumble recovery in the end zone. Bills lead 7 to 0.")
+        == "Touchdown, Buffalo Bills, James Mitchell, fumble recovery in the end zone. Buffalo Bills lead 7 to 0.")
+}
+
+@Test func extraPointTryIsNotARedZoneEntry() {
+    var differ = EventDiffer()
+    // Buffalo in the red zone, scores; then the try (no down) shows them "in the red zone" again.
+    _ = differ.ingest(scoreboard: [game(possession: "2", redZone: true)], at: t0)
+    _ = differ.ingest(scoreboard: [game(home: 6, possession: nil, redZone: false)], at: t0)
+    var tryAttempt = game(home: 6, possession: "2", redZone: true)
+    tryAttempt.isLiveDown = false
+    #expect(differ.ingest(scoreboard: [tryAttempt], at: t0).isEmpty)
+    // Kickoff to Baltimore, then Baltimore's first real down at its own 25.
+    var kickoff = game(home: 7, possession: "33", redZone: false)
+    kickoff.isLiveDown = false
+    #expect(differ.ingest(scoreboard: [kickoff], at: t0).isEmpty)
+    #expect(differ.ingest(scoreboard: [game(home: 7, possession: "33", redZone: false)], at: t0).isEmpty)
+    // A real Baltimore drive into the red zone is still announced.
+    #expect(differ.ingest(scoreboard: [game(home: 7, possession: "33", redZone: true)], at: t0).map(\.kind) == [.redZone])
 }

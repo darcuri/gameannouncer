@@ -3,7 +3,7 @@ import SwiftUI
 
 @main
 struct GameDayApp: App {
-    @ViewState private var session = LiveSession()
+    @State private var session = LiveSession()
 
     init() {
         // Built with SwiftPM rather than as an .app bundle, so ask for a normal Dock app.

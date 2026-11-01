@@ -39,6 +39,9 @@ public struct GameState: Sendable, Equatable {
     public var clock: String
     public var possessionESPNID: String?
     public var inRedZone: Bool
+    /// False during extra-point tries and kickoffs, when ESPN reports no down and its
+    /// possession and red-zone fields describe the try, not a drive.
+    public var isLiveDown = true
     public var kickoff: Date? = nil
 
     public var teams: [NFLTeam] { [away.team, home.team] }

@@ -47,6 +47,8 @@ public struct ESPNCompetition: Decodable, Sendable {
     public struct Situation: Decodable, Sendable {
         public let possession: String?
         public let isRedZone: Bool?
+        /// -1 between plays that aren't downs: extra-point tries and kickoffs.
+        public let down: Int?
         public let downDistanceText: String?
     }
     public let competitors: [Competitor]
@@ -162,6 +164,7 @@ extension ESPNEvent {
             clock: status.displayClock ?? "",
             possessionESPNID: situation?.possession,
             inRedZone: situation?.isRedZone ?? false,
+            isLiveDown: (situation?.down ?? 0) >= 1,
             kickoff: date.flatMap(Self.parseDate)
         )
     }

@@ -41,7 +41,9 @@ public struct GameEvent: Sendable, Equatable {
 ///   score at the latest play says how the try went. Only failures and two-point
 ///   conversions get a follow-up, since a made kick is the default.
 /// - ESPN briefly drops possession after scores and timeouts, then restores it with a stale
-///   red-zone flag. A snapshot without possession leaves the stored possession alone.
+///   red-zone flag. During extra-point tries and kickoffs it reports no down (-1) while
+///   showing the scoring team "in the red zone" at the try spot. Neither kind of snapshot
+///   says anything about a drive, so both leave the stored possession and red zone alone.
 public struct EventDiffer: Sendable {
     public var maxPlayAge: TimeInterval
 
@@ -69,7 +71,7 @@ public struct EventDiffer: Sendable {
                 games[game.id] = game
                 continue
             }
-            if game.possessionESPNID == nil {
+            if game.possessionESPNID == nil || !game.isLiveDown {
                 game.possessionESPNID = prev.possessionESPNID
                 game.inRedZone = prev.inRedZone
             }

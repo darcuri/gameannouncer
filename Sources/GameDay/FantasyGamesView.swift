@@ -4,7 +4,7 @@ import SwiftUI
 /// Matchup list on the left, the selected matchup's starters side by side on the right.
 struct FantasyGamesView: View {
     @Environment(LiveSession.self) private var session
-    @ViewState private var selection: Int? = 0
+    @State private var selection: Int? = 0
 
     var body: some View {
         let matchups = session.matchups
@@ -84,7 +84,7 @@ private struct TeamColumn: View {
     @Environment(LiveSession.self) private var session
     let franchise: LiveScoring.Franchise
     let leading: Bool
-    @ViewState private var showBench = false
+    @State private var showBench = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {

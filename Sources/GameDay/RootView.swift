@@ -106,11 +106,11 @@ struct StatusBar: View {
 /// The original's "Get League" tab: enter a league ID, pick your team.
 struct LeagueSetupView: View {
     @Environment(LiveSession.self) private var session
-    @ViewState private var leagueID = ""
-    @ViewState private var league: FantasyLeague?
-    @ViewState private var franchiseID = ""
-    @ViewState private var loading = false
-    @ViewState private var error: String?
+    @State private var leagueID = ""
+    @State private var league: FantasyLeague?
+    @State private var franchiseID = ""
+    @State private var loading = false
+    @State private var error: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {

@@ -4,7 +4,7 @@ import SwiftUI
 /// Everything GameDay noticed, newest first. Spoken entries get a speaker icon.
 struct PlayLogView: View {
     @Environment(LiveSession.self) private var session
-    @ViewState private var scoringOnly = true
+    @State private var scoringOnly = true
 
     var body: some View {
         let entries = session.log.filter { !scoringOnly || SpokenCategory($0.event.kind) == .scoring }
@@ -76,7 +76,7 @@ struct PlayLogView: View {
 
 struct SettingsView: View {
     @Environment(LiveSession.self) private var session
-    @ViewState private var voice = ""
+    @State private var voice = ""
 
     var body: some View {
         @Bindable var session = session

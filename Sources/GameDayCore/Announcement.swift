@@ -14,7 +14,7 @@ public enum Announcement {
         let game = event.game
         let team = event.team
         let opponent = team.map { $0.espnID == game.away.espnID ? game.home : game.away }
-        let name = team.map(spokenName) ?? spokenName(game.home)
+        let name = team.map(fullName) ?? fullName(game.home)
         let score = scoreLine(event)
 
         switch event.kind {
@@ -41,23 +41,19 @@ public enum Announcement {
         case .fumbleLost:
             return fumble(event, defense: team, offense: opponent, names: names)
         case .redZone:
-            return "\(name) in the red zone against the \(opponent?.nickname ?? "defense")."
+            return "\(name) in the red zone against the \(opponent.map(fullName) ?? "defense")."
         case .kickoff:
-            return "Kickoff: \(spokenName(game.away)) at \(spokenName(game.home))."
+            return "Kickoff: \(fullName(game.away)) at \(fullName(game.home))."
         case .halftime:
-            return "Halftime, \(spokenName(game.away)) at \(spokenName(game.home)).\(score)"
+            return "Halftime, \(fullName(game.away)) at \(fullName(game.home)).\(score)"
         case .final:
-            return "Final, \(spokenName(game.away)) at \(spokenName(game.home)).\(score)"
+            return "Final, \(fullName(game.away)) at \(fullName(game.home)).\(score)"
         case .scoreCorrection:
-            return "Score correction, \(spokenName(game.away)) at \(spokenName(game.home)).\(score)"
+            return "Score correction, \(fullName(game.away)) at \(fullName(game.home)).\(score)"
         }
     }
 
-    /// Two-team cities are ambiguous out loud, so those use the nickname.
-    static func spokenName(_ side: GameState.Side) -> String {
-        ["New York", "Los Angeles"].contains(side.location) ? "the \(side.nickname)" : side.location
-    }
-
+    /// "Dallas Cowboys": always the full name, so two-team cities are never ambiguous.
     static func fullName(_ side: GameState.Side) -> String { "\(side.location) \(side.nickname)" }
 
     // MARK: Sacks
@@ -210,8 +206,8 @@ public enum Announcement {
         let (away, home) = (event.awayScore, event.homeScore)
         if away == home { return " Tied at \(away)." }
         let (leader, high, low) = away > home
-            ? (event.game.away.nickname, away, home)
-            : (event.game.home.nickname, home, away)
+            ? (fullName(event.game.away), away, home)
+            : (fullName(event.game.home), home, away)
         let verb = event.kind == .final ? "win" : "lead"
         return " \(leader) \(verb) \(high) to \(low)."
     }
