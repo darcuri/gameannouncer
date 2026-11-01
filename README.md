@@ -26,8 +26,8 @@ Scores refresh every 30 seconds while games are on. Between game windows, the ap
 ## Build and run
 
 ```bash
-git clone https://github.com/darcuri/gameday.git
-cd gameday
+git clone https://github.com/darcuri/gameannouncer.git
+cd gameannouncer
 scripts/make-app.sh --open   # builds and opens dist/GameAnnouncer.app
 ```
 
