@@ -38,6 +38,22 @@ Sources: [MFL GameDay page](https://home.myfantasyleague.com/game-day/), [MFL AP
 - **`nfl_sched_{W}.json` is too slow for announcements.** It showed every game as not started until at least 12 minutes after kickoff. Later it ran about 10 minutes behind ESPN: at 18:55 UTC its `lastUpdate` was 18:45:53, and it still showed the end of the first quarter while ESPN was in the second quarter. **ESPN's scoreboard has to be the main source for NFL game state** (score, clock, possession, red zone). Keep MFL's file only as a backup and to cross-check its week and game list.
 - **`liveScoring` is reasonably current.** Fantasy points changed within about 30 seconds of the ESPN scoreboard.
 - **Not every fantasy-point jump is a play.** At kickoff, every starting defense jumped by about 10 points, from "0 points allowed" scoring. The comparison logic must not treat fantasy-point changes alone as scoring plays. Announce from NFL events, then attach the fantasy impact.
+- **ESPN posts touchdowns before the try.** The touchdown play first shows +6. A minute or two later, the same play ID is updated in place to +7 or +8. ESPN's `scoringPlays` list often keeps the old score and text, so take scores from the drives' play-by-play. `EventDiffer` announces a +6 touchdown without a score line, then follows up only on a missed try or a two-point conversion.
+- **Possession blinks after scores and timeouts.** The scoreboard sends one snapshot with no possession, then the same team again with a stale red-zone flag. Treating "no possession" as "no change" removed the duplicate red-zone calls.
+- **Play text needs care.**
+  - Names are abbreviated ("T.Parker"). Expand them through MFL's player database, which includes defensive players. Match last name, first initials and team, and ignore suffixes, since ESPN drops "Jr.".
+  - Reviewed plays keep the original call followed by "…REVERSED." and the corrected call; parse only the last call.
+  - "RECOVERED" is usually uppercase.
+  - Strip-sacks have their own play type, "Sack Opp Fumble Recovery".
+  - In summary text, a defensive or return touchdown reads "Name N Yd Interception Return". A fumble the offense recovers in its own end zone also uses that wording, so compare the scoring team with the team on offense.
+- **Plays in a drive aren't in order,** and the current drive can repeat the last previous one. Sort by `sequenceNumber` and remove duplicates by ID.
+- **Scope matters for noise.** Across 8 early games, "all games" gave about 60 announcements in 80 minutes. Most were red-zone entries and sacks, so the app needs per-event-type toggles.
+
+### Dev tools
+
+- `gameday-record`: saves live responses to `Fixtures/` (ignored by git).
+- `gameday-replay <week dir> --franchise <franchise ID> [--scope all|myGames|myPlayers] [--speak] [--from 13:00 --to 14:00]`: replays recordings through `EventDiffer` and prints or speaks the announcements.
+- `scripts/test.sh`: runs the tests. The Command Line Tools intermittently fail to find the Swift Testing macro plugin; the script passes its path explicitly.
 
 ## Proposed architecture
 

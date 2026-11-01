@@ -16,20 +16,3 @@ public struct ESPNClient: Sendable {
         try await http.get(Self.base.appending(path: "summary").appending(queryItems: [.init(name: "event", value: eventID)]))
     }
 }
-
-/// Just enough of the scoreboard to know which events exist and their state.
-public struct ESPNScoreboard: Decodable, Sendable {
-    public struct Event: Decodable, Sendable {
-        public struct Status: Decodable, Sendable {
-            public struct Kind: Decodable, Sendable { public let state: String } // pre / in / post
-            public let type: Kind
-        }
-        public let id: String
-        public let shortName: String
-        public let status: Status
-
-        public var isLive: Bool { status.type.state == "in" }
-        public var isFinal: Bool { status.type.state == "post" }
-    }
-    public let events: [Event]
-}
