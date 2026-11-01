@@ -8,3 +8,6 @@ Fixtures/
 DerivedData/
 
 .DS_Store
+
+# Built app bundle (scripts/make-app.sh)
+dist/
