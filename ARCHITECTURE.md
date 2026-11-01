@@ -58,6 +58,7 @@ Sources: [MFL GameDay page](https://home.myfantasyleague.com/game-day/), [MFL AP
   - Tabs follow the original's documented views: Fantasy Games (the matchup list, with each matchup's starters side by side), NFL Games (score, clock, possession, red zone, and your and your opponents' starters in each game), and Touchdowns & Plays (the event log, with spoken entries marked). The status bar has the original's countdown to the next refresh.
 - `scripts/make-app.sh [--open | --zip]`: builds `dist/GameAnnouncer.app` (universal release build for Apple Silicon and Intel, `Support/Info.plist`, bundle ID `com.darcuri.gameannouncer`, ad-hoc signed). The icon is drawn in code (`AppIcon.swift`), rendered with `GameAnnouncer --render-icon`, and packed into `AppIcon.icns`; `swift run` builds use the same artwork as their Dock icon. The bundled app keeps settings under its bundle ID and copies them over from `swift run`'s "GameAnnouncer" defaults on first launch. `--zip` also writes `dist/GameAnnouncer-<version>.zip` and its SHA-256, taking the version from `Support/Info.plist`.
 - `swift test`: runs the tests.
+- `scripts/configure-github.sh`: run once right after making the repo public. It applies rulesets (no force-push or deletion of `main`; pull requests with passing CI, which admins can bypass; immutable `v*` tags), secret scanning with push protection, private vulnerability reporting and Dependabot alerts. GitHub's free plan only allows these on public repos.
 
 ## Proposed architecture
 
