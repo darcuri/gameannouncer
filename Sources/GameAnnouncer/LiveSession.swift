@@ -1,5 +1,5 @@
 import Foundation
-import GameDayCore
+import GameAnnouncerCore
 import Observation
 
 /// Event types the user can mute separately.
@@ -92,7 +92,7 @@ final class LiveSession {
     private var loop: Task<Void, Never>?
     private var pause: Task<Void, Never>?
 
-    static let userAgent = ProcessInfo.processInfo.environment["MFL_USER_AGENT"] ?? "GameDayMac/0.1"
+    static let userAgent = ProcessInfo.processInfo.environment["MFL_USER_AGENT"] ?? "GameAnnouncer/0.1"
 
     // MARK: Lifecycle
 
@@ -227,7 +227,7 @@ final class LiveSession {
     // MARK: Player database cache
 
     private func loadPlayers(client: MFLClient, year: Int) async throws -> PlayerDatabase {
-        let dir = URL.applicationSupportDirectory.appending(path: "GameDay")
+        let dir = URL.applicationSupportDirectory.appending(path: "GameAnnouncer")
         let file = dir.appending(path: "players-\(year).json")
         let attributes = try? FileManager.default.attributesOfItem(atPath: file.path(percentEncoded: false))
         if let modified = attributes?[.modificationDate] as? Date, modified.timeIntervalSinceNow > -86_400,

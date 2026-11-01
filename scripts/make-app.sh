@@ -1,16 +1,16 @@
 #!/bin/sh
-# Builds dist/GameDay.app: a release build of the GameDay target wrapped in an app bundle,
+# Builds dist/GameAnnouncer.app: a release build of the GameAnnouncer target wrapped in an app bundle,
 # with the icon rendered from AppIcon.swift. Usage: scripts/make-app.sh [--open]
 set -eu
 cd "$(dirname "$0")/.."
 
-swift build -c release --product GameDay
-BIN="$(swift build -c release --show-bin-path)/GameDay"
+swift build -c release --product GameAnnouncer
+BIN="$(swift build -c release --show-bin-path)/GameAnnouncer"
 
-APP=dist/GameDay.app
+APP=dist/GameAnnouncer.app
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp "$BIN" "$APP/Contents/MacOS/GameDay"
+cp "$BIN" "$APP/Contents/MacOS/GameAnnouncer"
 cp Support/Info.plist "$APP/Contents/Info.plist"
 
 # Every size macOS asks for, downscaled from one 1024px render.

@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import GameDayCore
+@testable import GameAnnouncerCore
 
 @Test func scheduleDecodesSingleMatchupAsArray() throws {
     let json = """

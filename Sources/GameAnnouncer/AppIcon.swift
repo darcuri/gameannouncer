@@ -1,7 +1,7 @@
 import AppKit
 
 /// The app icon, drawn in code so there's one source for both the Dock icon of unbundled
-/// builds (`swift run`) and the .icns that scripts/make-app.sh puts in GameDay.app.
+/// builds (`swift run`) and the .icns that scripts/make-app.sh puts in GameAnnouncer.app.
 ///
 /// A football on a gridiron-green squircle, with announcer sound waves coming off it.
 /// Geometry follows Apple's macOS icon grid: an 824-point body centered on a 1024 canvas.

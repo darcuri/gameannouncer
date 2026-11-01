@@ -2,19 +2,19 @@
 import PackageDescription
 
 let package = Package(
-    name: "GameDay",
+    name: "GameAnnouncer",
     platforms: [.macOS(.v14)],
     products: [
-        .library(name: "GameDayCore", targets: ["GameDayCore"]),
-        .executable(name: "gameday-record", targets: ["gameday-record"]),
-        .executable(name: "gameday-replay", targets: ["gameday-replay"]),
-        .executable(name: "GameDay", targets: ["GameDay"]),
+        .library(name: "GameAnnouncerCore", targets: ["GameAnnouncerCore"]),
+        .executable(name: "gameannouncer-record", targets: ["gameannouncer-record"]),
+        .executable(name: "gameannouncer-replay", targets: ["gameannouncer-replay"]),
+        .executable(name: "GameAnnouncer", targets: ["GameAnnouncer"]),
     ],
     targets: [
-        .target(name: "GameDayCore"),
-        .executableTarget(name: "gameday-record", dependencies: ["GameDayCore"]),
-        .executableTarget(name: "gameday-replay", dependencies: ["GameDayCore"]),
-        .executableTarget(name: "GameDay", dependencies: ["GameDayCore"]),
-        .testTarget(name: "GameDayCoreTests", dependencies: ["GameDayCore"]),
+        .target(name: "GameAnnouncerCore"),
+        .executableTarget(name: "gameannouncer-record", dependencies: ["GameAnnouncerCore"]),
+        .executableTarget(name: "gameannouncer-replay", dependencies: ["GameAnnouncerCore"]),
+        .executableTarget(name: "GameAnnouncer", dependencies: ["GameAnnouncerCore"]),
+        .testTarget(name: "GameAnnouncerCoreTests", dependencies: ["GameAnnouncerCore"]),
     ]
 )

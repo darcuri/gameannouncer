@@ -1,6 +1,6 @@
 import Foundation
 
-/// Turns events into the sentences GameDay speaks.
+/// Turns events into the sentences GameAnnouncer speaks.
 public enum Announcement {
     /// Just the play and the score. Fantasy involvement decides whether an event is spoken
     /// (see `FantasyContext.isRelevant`), but isn't read out. `names` expands ESPN's

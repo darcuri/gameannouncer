@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import GameDayCore
+@testable import GameAnnouncerCore
 
 private let t0 = Date(timeIntervalSince1970: 1_793_556_000)
 

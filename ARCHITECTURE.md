@@ -1,4 +1,4 @@
-# GameDay for Mac — Architecture Evaluation
+# GameAnnouncer — Architecture Evaluation
 
 ## What the original did
 
@@ -51,12 +51,12 @@ Sources: [MFL GameDay page](https://home.myfantasyleague.com/game-day/), [MFL AP
 
 ### Dev tools
 
-- `gameday-record`: saves live responses to `Fixtures/` (ignored by git).
-- `gameday-replay <week dir> --franchise <franchise ID> [--scope all|myGames|myPlayers] [--speak] [--from 13:00 --to 14:00]`: replays recordings through `EventDiffer` and prints or speaks the announcements.
-- `GameDay` (SwiftUI app): `swift run GameDay -leagueID <league ID> -franchiseID <franchise ID>`. With no arguments it shows a league setup screen, and choices persist in UserDefaults. Add `-muted YES` for silent testing, and `-snapshotDir <folder>` to save a PNG of each tab after the first update. The snapshots draw the app's own view hierarchy and need no Screen Recording permission, but they render the tab bar blank.
+- `gameannouncer-record`: saves live responses to `Fixtures/` (ignored by git).
+- `gameannouncer-replay <week dir> --franchise <franchise ID> [--scope all|myGames|myPlayers] [--speak] [--from 13:00 --to 14:00]`: replays recordings through `EventDiffer` and prints or speaks the announcements.
+- `GameAnnouncer` (SwiftUI app): `swift run GameAnnouncer -leagueID <league ID> -franchiseID <franchise ID>`. With no arguments it shows a league setup screen, and choices persist in UserDefaults. Add `-muted YES` for silent testing, and `-snapshotDir <folder>` to save a PNG of each tab after the first update. The snapshots draw the app's own view hierarchy and need no Screen Recording permission, but they render the tab bar blank.
   - Built with SwiftPM and Xcode's toolchain. Binaries land in `swift build --show-bin-path` (`.build/out/Products/Debug`). The Command Line Tools alone can't build the app: in this SDK `@State` is a macro whose plugin ships only with Xcode.
   - Tabs follow the original's documented views: Fantasy Games (the matchup list, with each matchup's starters side by side), NFL Games (score, clock, possession, red zone, and your and your opponents' starters in each game), and Touchdowns & Plays (the event log, with spoken entries marked). The status bar has the original's countdown to the next refresh.
-- `scripts/make-app.sh [--open]`: builds `dist/GameDay.app` (release build, `Support/Info.plist`, bundle ID `com.darcuri.gameday`, ad-hoc signed). The icon is drawn in code (`AppIcon.swift`), rendered with `GameDay --render-icon`, and packed into `AppIcon.icns`; `swift run` builds use the same artwork as their Dock icon. The bundled app keeps settings under its bundle ID and copies them over from `swift run`'s "GameDay" defaults on first launch.
+- `scripts/make-app.sh [--open]`: builds `dist/GameAnnouncer.app` (release build, `Support/Info.plist`, bundle ID `com.darcuri.gameannouncer`, ad-hoc signed). The icon is drawn in code (`AppIcon.swift`), rendered with `GameAnnouncer --render-icon`, and packed into `AppIcon.icns`; `swift run` builds use the same artwork as their Dock icon. The bundled app keeps settings under its bundle ID and copies them over from `swift run`'s "GameAnnouncer" defaults on first launch.
 - `swift test`: runs the tests.
 
 ## Proposed architecture

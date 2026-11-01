@@ -1,6 +1,6 @@
 import AppKit
 
-/// Development aid: `GameDay -snapshotDir <folder>` saves a PNG of the window for each tab
+/// Development aid: `GameAnnouncer -snapshotDir <folder>` saves a PNG of the window for each tab
 /// once the first update has loaded. It draws the app's own view hierarchy, so it needs no
 /// Screen Recording permission.
 @MainActor
@@ -22,7 +22,7 @@ enum Snapshots {
     }
 
     private static func capture(to url: URL) {
-        guard let window = NSApp.windows.first(where: { $0.isVisible && $0.title.hasPrefix("GameDay") }),
+        guard let window = NSApp.windows.first(where: { $0.isVisible && $0.title.hasPrefix("GameAnnouncer") }),
               let view = window.contentView?.superview ?? window.contentView,
               let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds)
         else { return }

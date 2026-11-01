@@ -1,7 +1,7 @@
-import GameDayCore
+import GameAnnouncerCore
 import SwiftUI
 
-/// Everything GameDay noticed, newest first. Spoken entries get a speaker icon.
+/// Everything GameAnnouncer noticed, newest first. Spoken entries get a speaker icon.
 struct PlayLogView: View {
     @Environment(LiveSession.self) private var session
     @State private var scoringOnly = true

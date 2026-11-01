@@ -1,10 +1,10 @@
 import Foundation
-import GameDayCore
+import GameAnnouncerCore
 
-// Replays fixtures written by gameday-record through EventDiffer and prints (or speaks)
-// what GameDay would have announced.
+// Replays fixtures written by gameannouncer-record through EventDiffer and prints (or speaks)
+// what GameAnnouncer would have announced.
 //
-// Usage: gameday-replay <week dir> [--franchise ID] [--scope all|myGames|myPlayers]
+// Usage: gameannouncer-replay <week dir> [--franchise ID] [--scope all|myGames|myPlayers]
 //                       [--max-age SECS] [--speak] [--voice NAME] [--from HH:MM] [--to HH:MM]
 
 struct Options {
@@ -94,7 +94,7 @@ func speak(_ text: String, voice: String?) {
 }
 
 let options = Options.parse(CommandLine.arguments)
-guard let dir = options.dir else { fail("usage: gameday-replay <week dir> [options]") }
+guard let dir = options.dir else { fail("usage: gameannouncer-replay <week dir> [options]") }
 
 let fm = FileManager.default
 let leagueDirs = (try? fm.contentsOfDirectory(atPath: dir.path(percentEncoded: false)))?

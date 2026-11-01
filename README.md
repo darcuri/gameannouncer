@@ -1,4 +1,6 @@
-# GameDay for Mac
+# GameAnnouncer
+
+**Live scoring and announcements for MyFantasyLeague**, on the Mac.
 
 Live fantasy football scoring for [MyFantasyLeague](https://www.myfantasyleague.com) leagues, with spoken play-by-play announcements. It's inspired by MFL's old Windows GameDay program, which called out touchdowns, field goals, red-zone trips and sacks as they happened.
 
@@ -26,13 +28,13 @@ Scores refresh every 30 seconds while games are on. Between game windows, the ap
 ```bash
 git clone https://github.com/darcuri/gameday.git
 cd gameday
-scripts/make-app.sh --open   # builds and opens dist/GameDay.app
+scripts/make-app.sh --open   # builds and opens dist/GameAnnouncer.app
 ```
 
 Or run it straight from the source tree:
 
 ```bash
-swift run GameDay
+swift run GameAnnouncer
 ```
 
 On first launch, enter your league ID and pick your team.
@@ -46,15 +48,15 @@ Open your league's home page on myfantasyleague.com. The league ID is the number
 Public leagues work as is. For a private league, get an API key from **Help → Developer's API** on your league's site. Then run the app with that key in the `MFL_APIKEY` environment variable:
 
 ```bash
-MFL_APIKEY=your-key swift run GameDay
+MFL_APIKEY=your-key swift run GameAnnouncer
 ```
 
 ## Development
 
 ```bash
 swift test                            # unit tests
-swift run gameday-record --league ID  # record live API responses to Fixtures/ during games
-swift run gameday-replay Fixtures/2026-W08 --franchise ID --speak   # replay recordings through the announcer
+swift run gameannouncer-record --league ID  # record live API responses to Fixtures/ during games
+swift run gameannouncer-replay Fixtures/2026-W08 --franchise ID --speak   # replay recordings through the announcer
 ```
 
 [ARCHITECTURE.md](ARCHITECTURE.md) covers the data sources, the event detection and what was learned from recording live games.

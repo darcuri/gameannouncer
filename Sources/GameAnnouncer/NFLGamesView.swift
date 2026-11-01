@@ -1,4 +1,4 @@
-import GameDayCore
+import GameAnnouncerCore
 import SwiftUI
 
 /// Every NFL game this week, with which of my (and my opponents') starters are in it.

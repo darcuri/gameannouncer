@@ -1,10 +1,10 @@
 import Foundation
-import GameDayCore
+import GameAnnouncerCore
 
 // Records raw MFL + ESPN responses during live games, so EventDiffer can be built and
 // tested against real snapshot sequences.
 //
-// Usage: gameday-record [--league ID] [--week N] [--year YYYY] [--out DIR]
+// Usage: gameannouncer-record [--league ID] [--week N] [--year YYYY] [--out DIR]
 //                       [--interval SECS] [--summary-interval SECS] [--once] [--no-espn]
 // Env:   MFL_APIKEY (private leagues), MFL_USER_AGENT (registered client name)
 
@@ -94,7 +94,7 @@ struct SummarySignature: Decodable, Equatable {
 setlinebuf(stdout)
 
 let options = Options.parse(CommandLine.arguments)
-let userAgent = ProcessInfo.processInfo.environment["MFL_USER_AGENT"] ?? "GameDayMac-spike/0.1"
+let userAgent = ProcessInfo.processInfo.environment["MFL_USER_AGENT"] ?? "GameAnnouncer-recorder/0.1"
 let mfl = MFLClient(
     year: options.year,
     leagueID: options.league,

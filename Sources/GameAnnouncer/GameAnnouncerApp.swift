@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 @main
-struct GameDayApp: App {
+struct GameAnnouncerApp: App {
     @State private var session: LiveSession
 
     init() {
@@ -29,12 +29,12 @@ struct GameDayApp: App {
         _session = State(initialValue: LiveSession())
     }
 
-    /// GameDay.app keeps its settings under its bundle ID, while `swift run` builds use the
-    /// "GameDay" domain. On the bundled app's first launch, copy the league setup across.
+    /// GameAnnouncer.app keeps its settings under its bundle ID, while `swift run` builds use the
+    /// "GameAnnouncer" domain. On the bundled app's first launch, copy the league setup across.
     private static func adoptUnbundledSettings() {
         let defaults = UserDefaults.standard
         guard defaults.string(forKey: "leagueID") == nil,
-              let unbundled = UserDefaults(suiteName: "GameDay"),
+              let unbundled = UserDefaults(suiteName: "GameAnnouncer"),
               unbundled.string(forKey: "leagueID") != nil
         else { return }
         for key in ["leagueID", "franchiseID", "scope", "muted", "mutedCategories", "voice"] {
@@ -43,7 +43,7 @@ struct GameDayApp: App {
     }
 
     var body: some Scene {
-        WindowGroup("GameDay") {
+        WindowGroup("GameAnnouncer") {
             RootView()
                 .environment(session)
                 .frame(minWidth: 960, minHeight: 620)

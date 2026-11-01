@@ -1,4 +1,4 @@
-import GameDayCore
+import GameAnnouncerCore
 import SwiftUI
 
 enum RootTab: String, CaseIterable {
@@ -30,7 +30,7 @@ struct RootView: View {
             Divider()
             StatusBar()
         }
-        .navigationTitle(session.league.map { "GameDay — \($0.name)" } ?? "GameDay")
+        .navigationTitle(session.league.map { "GameAnnouncer — \($0.name)" } ?? "GameAnnouncer")
         .navigationSubtitle(session.week.map { "Week \($0)" } ?? "")
         .toolbar {
             if session.isConfigured {
@@ -114,8 +114,10 @@ struct LeagueSetupView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Welcome to GameDay")
+            Text("Welcome to GameAnnouncer")
                 .font(.largeTitle.bold())
+            Text("Live scoring and announcements for MyFantasyLeague")
+                .font(.title3)
             Text("Enter your MyFantasyLeague league ID: the 5-digit number at the end of your league's home page address.")
                 .foregroundStyle(.secondary)
             HStack {

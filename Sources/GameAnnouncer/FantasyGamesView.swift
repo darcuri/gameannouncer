@@ -1,4 +1,4 @@
-import GameDayCore
+import GameAnnouncerCore
 import SwiftUI
 
 /// Matchup list on the left, the selected matchup's starters side by side on the right.
