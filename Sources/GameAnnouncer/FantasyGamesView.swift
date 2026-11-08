@@ -131,7 +131,8 @@ private struct PlayerTable: View {
     let players: [LiveScoring.PlayerScore]
 
     var body: some View {
-        // Two lines per player (name, then team and game status) so names get the full width.
+        // Name, then team or NFL score and game status, then points by scoring category,
+        // each on its own line so names get the full width.
         VStack(alignment: .leading, spacing: 8) {
             ForEach(players, id: \.id) { score in
                 let player = session.player(score.id)
@@ -153,17 +154,66 @@ private struct PlayerTable: View {
                             }
                         }
                         HStack(spacing: 6) {
-                            Text(player?.team.code ?? "")
-                                .foregroundStyle(.secondary)
+                            if let player, let game, game.phase != .scheduled {
+                                GameScoreText(game: game, team: player.team)
+                            } else {
+                                Text(player?.team.code ?? "")
+                                    .foregroundStyle(.secondary)
+                            }
                             GameStatusText(game: game, secondsRemaining: score.gameSecondsRemaining)
                         }
                         .font(.caption)
+                        BreakdownText(lines: session.breakdowns[score.id].filter { $0.points != 0 })
                     }
                     Spacer(minLength: 8)
                     Text(score.score, format: .number.precision(.fractionLength(2)))
                         .monospacedDigit()
                 }
             }
+        }
+    }
+}
+
+/// "BUF 17, MIA 10", away team first, with the player's team emphasized.
+private struct GameScoreText: View {
+    let game: GameState
+    let team: NFLTeam
+
+    var body: some View {
+        HStack(spacing: 0) {
+            side(game.away)
+            Text(", ").foregroundStyle(.secondary)
+            side(game.home)
+        }
+        .font(.caption.monospacedDigit())
+        .lineLimit(1)
+    }
+
+    private func side(_ side: GameState.Side) -> some View {
+        Text("\(side.team.code) \(side.score)")
+            .foregroundStyle(side.team == team ? Color.primary : Color.secondary)
+            .fontWeight(side.team == team ? .semibold : .regular)
+    }
+}
+
+/// "159 Passing Yards 7.95 · 1 Passing TDs 4.00", wrapping as needed.
+private struct BreakdownText: View {
+    let lines: [ScoringBreakdowns.Line]
+
+    var body: some View {
+        if !lines.isEmpty {
+            lines.enumerated().reduce(Text("")) { text, item in
+                let (index, line) = item
+                let points = line.points.formatted(.number.precision(.fractionLength(2)))
+                return text
+                    + Text(index == 0 ? "" : "  ·  ")
+                    // Non-breaking spaces, so lines wrap between items, not inside one.
+                    + Text("\(line.count) \(line.category) ".replacingOccurrences(of: " ", with: "\u{00A0}"))
+                    + Text(points).foregroundColor(line.points < 0 ? .red : .primary).monospacedDigit()
+            }
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

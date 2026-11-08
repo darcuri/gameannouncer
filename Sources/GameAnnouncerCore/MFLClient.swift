@@ -60,6 +60,17 @@ public actor MFLClient {
         try await export(type: "liveScoring", params: ["W": String(week), "DETAILS": "1"])
     }
 
+    /// The league's live scoring web page, for `ScoringBreakdowns`. Not an API export, so
+    /// its markup can change without notice. Call `league()` first so this uses the league's host.
+    public func liveScoringPage(week: Int) async throws -> String {
+        guard let leagueID else { preconditionFailure("league page without a league ID") }
+        var items = [URLQueryItem(name: "L", value: leagueID), URLQueryItem(name: "W", value: String(week))]
+        if let apiKey { items.append(URLQueryItem(name: "APIKEY", value: apiKey)) }
+        let url = (leagueHost ?? Self.apiHost).appending(path: "\(year)/live_scoring_summary").appending(queryItems: items)
+        let data = try await throttled { try await self.http.get(url) }
+        return String(decoding: data, as: UTF8.self)
+    }
+
     public func projectedScores(week: Int) async throws -> Data {
         try await export(type: "projectedScores", params: ["W": String(week)])
     }
