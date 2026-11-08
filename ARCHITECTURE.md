@@ -20,6 +20,7 @@ Sources: [MFL GameDay page](https://home.myfantasyleague.com/game-day/), [MFL AP
 | League, franchises, league host | `export?TYPE=league&L=…&JSON=1` | Gives the league's `wwwNN` host. Cache it per session. |
 | Rosters / starters | `TYPE=rosters`, `TYPE=liveScoring&DETAILS=1` | |
 | **Fantasy live scores** | `TYPE=liveScoring&L=…&W=…&DETAILS=1` | Per franchise: score, game seconds remaining, players yet to play / playing, per-player points. |
+| Points by scoring category | League page `{host}/{YEAR}/live_scoring_summary?L=…&W=…` | No export has this. Each player's points cell has a `title` like `•7.95 pts for 159 Passing Yards`, using the league's own rules. Parsed by `ScoringBreakdowns`. HTML, so it can change without notice; fetched best-effort after `liveScoring` and skipped silently on failure (it may need a login for private leagues). |
 | Projections | `TYPE=projectedScores` | Use for win-probability or "pace". |
 | Player DB | `TYPE=players&DETAILS=1` (+`SINCE=`) | Changes about once a day, so cache it on disk. Includes **`espn_id`**, `sportsdata_id`, `stats_id`, and others for cross-source matching. |
 | **NFL game state** | `fflnetdynamic{YEAR}/nfl_sched_{W}.json` | A static file that does update live (unlike `TYPE=nflSchedule`, which stopped in 2020). Per game: status, score, `gameSecondsRemaining`, `hasPossession`, **`inRedZone`**. Supports **ETag/Last-Modified**, so polling it is cheap. |

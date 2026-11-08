@@ -82,6 +82,7 @@ final class LiveSession {
     private(set) var league: FantasyLeague?
     private(set) var week: Int?
     private(set) var liveScoring: LiveScoring?
+    private(set) var breakdowns = ScoringBreakdowns(byPlayer: [:])
     private(set) var games: [GameState] = []
     private(set) var log: [LogEntry] = []
     private(set) var players: PlayerDatabase?
@@ -120,6 +121,7 @@ final class LiveSession {
         players = DemoData.players
         names = PlayerNames(DemoData.players)
         liveScoring = DemoData.liveScoring
+        breakdowns = DemoData.breakdowns
         context = FantasyContext(franchiseID: DemoData.myFranchise, liveScoring: DemoData.liveScoring,
                                  players: DemoData.players)
         games = DemoData.games
@@ -139,6 +141,7 @@ final class LiveSession {
         log = []
         league = nil
         liveScoring = nil
+        breakdowns = ScoringBreakdowns(byPlayer: [:])
         games = []
         start()
     }
@@ -231,6 +234,12 @@ final class LiveSession {
             liveScoring = live
             if let franchiseID, let players {
                 context = FantasyContext(franchiseID: franchiseID, liveScoring: live, players: players)
+            }
+            // Best effort: the page is HTML, and private leagues may not serve it to the app.
+            // Keep the last breakdowns rather than flagging every refresh as partial.
+            if let page = try? await mfl.liveScoringPage(week: week) {
+                let parsed = ScoringBreakdowns(liveScoringPage: page)
+                if !parsed.byPlayer.isEmpty { breakdowns = parsed }
             }
         } catch {
             problems.append("MFL: \(error)")

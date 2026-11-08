@@ -12,7 +12,7 @@ Live fantasy football scoring for [MyFantasyLeague](https://www.myfantasyleague.
 
 ### Fantasy Games
 
-Every matchup in your league, with live scores. Select one to see both teams' starters side by side, with points, game clock, and who has the ball (🏈) or is in the red zone (red 🏈).
+Every matchup in your league, with live scores. Select one to see both teams' starters side by side, with points broken down by scoring category ("235 Passing Yards 9.40"), the NFL score once their game has kicked off, the game clock, and who has the ball (🏈) or is in the red zone (red 🏈).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/fantasy-dark.png">

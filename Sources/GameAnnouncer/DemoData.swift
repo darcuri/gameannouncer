@@ -122,6 +122,36 @@ enum DemoData {
                                          team("0012", 90.60, home: true, yet: 1, playing: 3)]),
     ])
 
+    // MARK: Points by scoring category (each player's lines add up to their score above)
+
+    static let breakdowns: ScoringBreakdowns = {
+        func lines(_ items: [(String, String, Double)]) -> [ScoringBreakdowns.Line] {
+            items.map { ScoringBreakdowns.Line(category: $0.1, count: $0.0, points: $0.2) }
+        }
+        let rec = "Receptions", recYds = "Receiving Yards", rushYds = "Rushing Yards", rushTD = "Rushing TDs"
+        let passYds = "Passing Yards", passTD = "Passing TDs", int = "Interceptions", xp = "Extra Points"
+        return ScoringBreakdowns(byPlayer: [
+            "D01": lines([("235", passYds, 9.40), ("2", passTD, 8.00), ("1", rushTD, 6.00), ("1", int, -2.00)]),
+            "D02": lines([("62", rushYds, 6.20), ("3", rec, 3.00), ("50", recYds, 5.00)]),
+            "D03": lines([("1", rushTD, 6.00), ("89", rushYds, 8.90), ("2", rec, 2.00), ("20", recYds, 2.00)]),
+            "D04": lines([("6", rec, 6.00), ("103", recYds, 10.30)]),
+            "D05": lines([("4", rec, 4.00), ("58", recYds, 5.80)]),
+            "D06": lines([("2", rec, 2.00), ("11", recYds, 1.10)]),
+            "D08": lines([("1", "Field Goals 50+ Yards", 5.00), ("2", xp, 2.00)]),
+            "D09": lines([("1", "Defensive TDs", 6.00), ("1", int, 2.00), ("21", "Total Points Allowed", -2.00)]),
+            "D10": lines([("230", passYds, 9.20), ("1", passTD, 4.00), ("1", int, -2.00)]),
+            "D21": lines([("190", passYds, 7.60), ("2", passTD, 8.00)]),
+            "D22": lines([("1", rushTD, 6.00), ("77", rushYds, 7.70), ("4", rec, 4.00), ("20", recYds, 2.00)]),
+            "D23": lines([("2", rushTD, 12.00), ("101", rushYds, 10.10)]),
+            "D24": lines([("5", rec, 5.00), ("74", recYds, 7.40)]),
+            "D25": lines([("3", rec, 3.00), ("56", recYds, 5.60)]),
+            "D26": lines([("2", rec, 2.00), ("22", recYds, 2.20)]),
+            "D28": lines([("1", "Field Goals 40-49 Yards", 4.00), ("1", xp, 1.00)]),
+            "D29": lines([("3", "Sacks", 3.00), ("1", "Fumbles Recovered", 2.00), ("20", "Total Points Allowed", 4.00)]),
+            "D31": lines([("1", rushTD, 6.00), ("48", rushYds, 4.80), ("3", rec, 3.00)]),
+        ])
+    }()
+
     // MARK: NFL games
 
     private static func side(_ id: String, _ code: String, _ location: String, _ nickname: String, _ score: Int) -> GameState.Side {
