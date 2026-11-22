@@ -8,7 +8,7 @@ struct PlayLogView: View {
     @State private var scoringOnly = !LiveSession.isDemo
 
     var body: some View {
-        let entries = session.log.filter { !scoringOnly || SpokenCategory($0.event.kind) == .scoring }
+        let entries = session.log.filter { !scoringOnly || [.scoring, .fieldGoals].contains(SpokenCategory($0.event.kind)) }
         VStack(spacing: 0) {
             HStack {
                 Picker("Show", selection: $scoringOnly) {
@@ -56,7 +56,7 @@ struct PlayLogView: View {
 
     private func icon(_ kind: GameEvent.Kind) -> String {
         switch SpokenCategory(kind) {
-        case .scoring: "flag.checkered"
+        case .scoring, .fieldGoals: "flag.checkered"
         case .turnovers: "arrow.triangle.2.circlepath"
         case .sacks: "figure.american.football"
         case .redZone: "exclamationmark.circle"
@@ -66,7 +66,7 @@ struct PlayLogView: View {
 
     private func color(_ kind: GameEvent.Kind) -> Color {
         switch SpokenCategory(kind) {
-        case .scoring: .green
+        case .scoring, .fieldGoals: .green
         case .turnovers: .orange
         case .sacks: .purple
         case .redZone: .red
@@ -113,6 +113,9 @@ struct SettingsView: View {
                 }
                 .onChange(of: voice) { session.speaker.voiceIdentifier = voice.isEmpty ? nil : voice }
                 Button("Test Voice") { session.speaker.say("Touchdown, Carolina Panthers Defense, Jaycee Horn, 46 yard interception.") }
+            }
+            Section("Display") {
+                Toggle("Show jersey numbers", isOn: $session.showJerseyNumbers)
             }
         }
         .formStyle(.grouped)

@@ -1,3 +1,4 @@
+import AppKit
 import GameAnnouncerCore
 import SwiftUI
 
@@ -116,8 +117,16 @@ private struct TeamColumn: View {
         .frame(maxWidth: .infinity)
     }
 
+    /// Position, then name, then ID: MFL reorders its list as scores change, so anything less
+    /// than a total order makes rows within a position jump around.
     private func sorted(_ scores: [LiveScoring.PlayerScore]) -> [LiveScoring.PlayerScore] {
-        scores.sorted { positionRank($0) < positionRank($1) }
+        scores.sorted { a, b in
+            let (rankA, rankB) = (positionRank(a), positionRank(b))
+            if rankA != rankB { return rankA < rankB }
+            let (nameA, nameB) = (session.player(a.id)?.name ?? "", session.player(b.id)?.name ?? "")
+            if nameA != nameB { return nameA.localizedStandardCompare(nameB) == .orderedAscending }
+            return a.id < b.id
+        }
     }
 
     private func positionRank(_ score: LiveScoring.PlayerScore) -> Int {
@@ -144,8 +153,11 @@ private struct PlayerTable: View {
                         .frame(width: 30, alignment: .leading)
                     VStack(alignment: .leading, spacing: 1) {
                         HStack(spacing: 4) {
-                            Text(player?.displayName ?? "Player \(score.id)")
-                                .lineLimit(1)
+                            if let player {
+                                PlayerName(player: player)
+                            } else {
+                                Text("Player \(score.id)").lineLimit(1)
+                            }
                             if let player, let game, game.phase == .live, game.possessionTeam == player.team {
                                 Image(systemName: "football.fill")
                                     .font(.caption2)
@@ -171,6 +183,75 @@ private struct PlayerTable: View {
                 }
             }
         }
+    }
+}
+
+/// The player's name, jersey number and injury badge. The name opens recent news (or, for
+/// team defenses, which ESPN has no news for, just the injury status when there is one).
+private struct PlayerName: View {
+    @Environment(LiveSession.self) private var session
+    let player: FantasyPlayer
+    @State private var showNews = false
+    @State private var hovering = false
+
+    var body: some View {
+        let status = session.status(for: player)
+        HStack(spacing: 4) {
+            if player.espnID != nil || !status.isEmpty {
+                Button { showNews = true } label: { name(status) }
+                    .buttonStyle(.plain)
+                    .onHover { inside in
+                        hovering = inside
+                        if inside { NSCursor.pointingHand.push() } else { NSCursor.pop() }
+                    }
+                    .onDisappear { if hovering { NSCursor.pop(); hovering = false } }
+                    .popover(isPresented: $showNews, arrowEdge: .bottom) {
+                        PlayerNewsView(player: player)
+                    }
+            } else {
+                name(status)
+            }
+            if session.showJerseyNumbers, let jersey = player.jersey, !jersey.isEmpty {
+                Text("#\(jersey)")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            InjuryBadge(status: status)
+        }
+    }
+
+    private func name(_ status: PlayerStatus) -> some View {
+        Text(player.displayName)
+            .lineLimit(1)
+            .underline(hovering)
+            .foregroundStyle(status.changedInGame ? Color.red : Color.primary)
+    }
+}
+
+/// "Q" / "O" / "IR" in a small capsule, or a cross when there's only a play-by-play note.
+struct InjuryBadge: View {
+    let status: PlayerStatus
+
+    var body: some View {
+        if let report = status.report {
+            Text(report.code)
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 4)
+                .padding(.vertical, 1)
+                .background(Self.color(report.code), in: RoundedRectangle(cornerRadius: 3))
+                .help([report.summary, status.note].compactMap { $0 }.joined(separator: "\n"))
+        } else if let note = status.note {
+            Image(systemName: "cross.case.fill")
+                .font(.caption2)
+                .foregroundStyle(status.changedInGame ? .red : .orange)
+                .help(note)
+        }
+    }
+
+    /// Orange for "might play", red for "won't".
+    static func color(_ code: String) -> Color {
+        ["Q", "P", "DTD"].contains(code) ? .orange : .red
     }
 }
 

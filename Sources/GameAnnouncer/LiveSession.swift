@@ -4,13 +4,14 @@ import Observation
 
 /// Event types the user can mute separately.
 enum SpokenCategory: String, CaseIterable, Identifiable {
-    case scoring, turnovers, sacks, redZone, gameStatus
+    case scoring, fieldGoals, turnovers, sacks, redZone, gameStatus
 
     var id: String { rawValue }
 
     var label: String {
         switch self {
-        case .scoring: "Scores"
+        case .scoring: "Touchdowns & other scores"
+        case .fieldGoals: "Field goals"
         case .turnovers: "Turnovers"
         case .sacks: "Sacks"
         case .redZone: "Red zone"
@@ -20,7 +21,8 @@ enum SpokenCategory: String, CaseIterable, Identifiable {
 
     init(_ kind: GameEvent.Kind) {
         switch kind {
-        case .touchdown, .fieldGoal, .safety, .otherScore, .tryFailed, .twoPointGood, .scoreCorrection: self = .scoring
+        case .fieldGoal: self = .fieldGoals
+        case .touchdown, .safety, .otherScore, .tryFailed, .twoPointGood, .scoreCorrection: self = .scoring
         case .interception, .fumbleLost: self = .turnovers
         case .sack: self = .sacks
         case .redZone: self = .redZone
@@ -68,6 +70,11 @@ final class LiveSession {
         didSet { Self.save(mutedCategories.map(\.rawValue), "mutedCategories") }
     }
 
+    /// "#17" next to player names.
+    var showJerseyNumbers = isDemo || UserDefaults.standard.object(forKey: "showJerseyNumbers") as? Bool ?? true {
+        didSet { Self.save(showJerseyNumbers, "showJerseyNumbers") }
+    }
+
     private static func save(_ value: Any?, _ key: String) {
         guard !isDemo else { return }
         UserDefaults.standard.set(value, forKey: key)
@@ -96,6 +103,9 @@ final class LiveSession {
     let speaker = Speaker()
 
     private var differ = EventDiffer()
+    private var injuries = InjuryTracker()
+    private var injuriesFetched: Date?
+    private var newsCache: [String: (fetched: Date, items: [PlayerNewsItem])] = [:]
     private var names: PlayerNames?
     private var mfl: MFLClient?
     private let espn = ESPNClient(userAgent: LiveSession.userAgent)
@@ -125,6 +135,7 @@ final class LiveSession {
         context = FantasyContext(franchiseID: DemoData.myFranchise, liveScoring: DemoData.liveScoring,
                                  players: DemoData.players)
         games = DemoData.games
+        injuries = DemoData.injuries
         for event in DemoData.events { record(event) }
         lastUpdate = DemoData.now
         // Start the refresh countdown partway through, like a live session between updates.
@@ -138,6 +149,8 @@ final class LiveSession {
         pause?.cancel()
         loop = nil
         differ = EventDiffer()
+        injuries = InjuryTracker()
+        injuriesFetched = nil
         log = []
         league = nil
         liveScoring = nil
@@ -223,7 +236,10 @@ final class LiveSession {
                 return results
             }
             for summary in summaries {
-                events += differ.ingest(plays: summary.plays, gameID: summary.eventID, at: now)
+                let plays = summary.plays
+                events += differ.ingest(plays: plays, gameID: summary.eventID, at: now)
+                injuries.ingest(plays: plays, gameID: summary.eventID)
+                injuries.ingest(espn: summary.injuryReports, gameID: summary.eventID)
             }
         } catch {
             problems.append("ESPN: \(error)")
@@ -243,6 +259,17 @@ final class LiveSession {
             }
         } catch {
             problems.append("MFL: \(error)")
+        }
+
+        // Best effort, and only every 10 minutes: MFL's injury list moves slowly, and its
+        // rate limits are tighter during games.
+        if injuriesFetched.map({ now.timeIntervalSince($0) >= 600 }) ?? true,
+           let data = try? await mfl.injuries(week: week),
+           let reports = try? JSONDecoder().decode(MFLInjuries.self, from: data).reports {
+            injuriesFetched = now
+            let started = Set(games.filter { $0.phase != .scheduled }.flatMap(\.teams))
+            let players = self.players
+            injuries.ingest(mfl: reports) { id in players?.players[id].map { started.contains($0.team) } ?? false }
         }
 
         for event in events { record(event) }
@@ -285,6 +312,22 @@ final class LiveSession {
     func player(_ id: String) -> FantasyPlayer? { players?.players[id] }
 
     func game(for team: NFLTeam) -> GameState? { games.first { $0.teams.contains(team) } }
+
+    /// Injury designation, and whether it changed during the player's game.
+    func status(for player: FantasyPlayer) -> PlayerStatus {
+        injuries.status(for: player, gameID: game(for: player.team)?.id)
+    }
+
+    /// Latest news about a player, newest first. Cached for a minute so reopening a popover
+    /// doesn't refetch.
+    func news(for player: FantasyPlayer) async throws -> [PlayerNewsItem] {
+        if Self.isDemo { return DemoData.news(for: player) }
+        guard let espnID = player.espnID else { return [] }
+        if let cached = newsCache[espnID], cached.fetched.timeIntervalSinceNow > -60 { return cached.items }
+        let items = try JSONDecoder().decode(PlayerNews.self, from: try await espn.playerNews(athleteID: espnID)).items
+        newsCache[espnID] = (.now, items)
+        return items
+    }
 
     func franchiseName(_ id: String) -> String { league?.franchiseName(id) ?? "Team \(id)" }
 

@@ -12,7 +12,9 @@ Live fantasy football scoring for [MyFantasyLeague](https://www.myfantasyleague.
 
 ### Fantasy Games
 
-Every matchup in your league, with live scores. Select one to see both teams' starters side by side, with points broken down by scoring category ("235 Passing Yards 9.40"), the NFL score once their game has kicked off, the game clock, and who has the ball (🏈) or is in the red zone (red 🏈).
+Every matchup in your league, with live scores. Select one to see both teams' starters side by side, with points broken down by scoring category ("235 Passing Yards 9.40"), the NFL score once their game has kicked off, the game clock, and who has the ball (🏈) or is in the red zone (red 🏈). Players stay in a fixed order (position, then name), so rows don't jump around as scores change. A setting adds jersey numbers.
+
+Injury badges next to a name show the designation: Q, D, O, IR, SUS and so on. The name turns red if the status changes during the player's game, or if the play-by-play says they were hurt on a play and they haven't returned. Hover a badge for the details, and click a name for the latest news on that player (team defenses have none).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/fantasy-dark.png">
@@ -44,7 +46,7 @@ Every play in the log is spoken with macOS's built-in voices, for example:
 - "Touchdown, Seattle Seahawks Defense, Kendrick Monroe, 38 yard interception."
 - "Sack, Buffalo Bills, Caleb Dunn sacked by Victor Okafor for 7 yards."
 
-You can announce every NFL game, only games with your matchup's starters, or only plays by those starters. Each type of announcement can be turned off, and you can pick the voice.
+"Field goals" is its own toggle, separate from touchdowns and other scores. You can announce every NFL game, only games with your matchup's starters, or only plays by those starters. Each type of announcement can be turned off, and you can pick the voice.
 
 Scores refresh every 30 seconds while games are on. Between game windows, the app waits until shortly before the next kickoff.
 
@@ -103,8 +105,9 @@ for f in /tmp/shots/*.png; do sips -Z 1600 "$f" --out "docs/screenshots/$(basena
 
 ## Data sources
 
-- **MyFantasyLeague's [public API](https://api.myfantasyleague.com/2026/api_info):** league, rosters, players and live fantasy scoring.
-- **ESPN's public scoreboard and game summary endpoints:** NFL game state and play-by-play. These are undocumented and may change without notice.
+- **MyFantasyLeague's [public API](https://api.myfantasyleague.com/2026/api_info):** league, rosters, players (including jersey numbers and ESPN IDs), injury designations and live fantasy scoring.
+- **ESPN's public scoreboard and game summary endpoints:** NFL game state, play-by-play and live injury lists. These are undocumented and may change without notice.
+- **ESPN's player news feed** (`site.api.espn.com/apis/fantasy/v2/games/ffl/news/players`), for the news popover. Also undocumented and unofficial.
 
 ## Privacy
 
