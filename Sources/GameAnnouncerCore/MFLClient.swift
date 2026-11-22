@@ -45,6 +45,11 @@ public actor MFLClient {
         try await export(type: "players", params: ["DETAILS": "1"], host: Self.apiHost, league: false)
     }
 
+    /// Injury designations for every NFL player. MFL updates it through game day.
+    public func injuries(week: Int) async throws -> Data {
+        try await export(type: "injuries", params: ["W": String(week)], host: Self.apiHost, league: false)
+    }
+
     // MARK: League-scoped
 
     public func league() async throws -> Data {

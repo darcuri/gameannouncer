@@ -37,44 +37,47 @@ enum DemoData {
 
     // MARK: Players
 
-    private static func player(_ id: String, _ name: String, _ position: String, _ team: String) -> FantasyPlayer {
-        FantasyPlayer(id: id, name: name, position: position, team: NFLTeam(mfl: team))
+    private static func player(_ id: String, _ name: String, _ position: String, _ team: String,
+                               _ jersey: String? = nil) -> FantasyPlayer {
+        // Only individual players have a jersey, and only they have news to click through to.
+        FantasyPlayer(id: id, name: name, position: position, team: NFLTeam(mfl: team),
+                      jersey: jersey, espnID: jersey == nil ? nil : "demo-\(id)")
     }
 
     static let players = PlayerDatabase(players: [
         // Gridiron Gurus
-        player("D01", "Brooks, Tyler", "QB", "BUF"),
-        player("D02", "Hale, Marcus", "RB", "PHI"),
-        player("D03", "Rivers, Dante", "RB", "KCC"),
-        player("D04", "Pierce, Jalen", "WR", "SFO"),
-        player("D05", "Whitaker, Cole", "WR", "DET"),
-        player("D06", "Lyons, Andre", "WR", "LAR"),
-        player("D07", "Kessler, Noah", "TE", "CIN"),
-        player("D08", "Ortiz, Sam", "PK", "BUF"),
+        player("D01", "Brooks, Tyler", "QB", "BUF", "8"),
+        player("D02", "Hale, Marcus", "RB", "PHI", "26"),
+        player("D03", "Rivers, Dante", "RB", "KCC", "22"),
+        player("D04", "Pierce, Jalen", "WR", "SFO", "11"),
+        player("D05", "Whitaker, Cole", "WR", "DET", "84"),
+        player("D06", "Lyons, Andre", "WR", "LAR", "17"),
+        player("D07", "Kessler, Noah", "TE", "CIN", "88"),
+        player("D08", "Ortiz, Sam", "PK", "BUF", "3"),
         player("D09", "Seahawks, Seattle", "Def", "SEA"),
-        player("D10", "Marsh, Evan", "QB", "NYJ"),
-        player("D11", "Grant, Isaiah", "RB", "HOU"),
-        player("D12", "Barrett, Leo", "WR", "CHI"),
-        player("D13", "Callahan, Reid", "TE", "MIN"),
+        player("D10", "Marsh, Evan", "QB", "NYJ", "14"),
+        player("D11", "Grant, Isaiah", "RB", "HOU", "28"),
+        player("D12", "Barrett, Leo", "WR", "CHI", "13"),
+        player("D13", "Callahan, Reid", "TE", "MIN", "86"),
         // Blitz Brigade
-        player("D21", "Dunn, Caleb", "QB", "MIA"),
-        player("D22", "Vance, Jordan", "RB", "DAL"),
-        player("D23", "Foster, Malik", "RB", "SEA"),
-        player("D24", "Sutton, Trey", "WR", "DEN"),
-        player("D25", "Cole, Darius", "WR", "GBP"),
-        player("D26", "Ellis, Rashad", "WR", "ARI"),
-        player("D27", "Pratt, Owen", "TE", "BAL"),
-        player("D28", "Navarro, Luis", "PK", "DAL"),
+        player("D21", "Dunn, Caleb", "QB", "MIA", "9"),
+        player("D22", "Vance, Jordan", "RB", "DAL", "20"),
+        player("D23", "Foster, Malik", "RB", "SEA", "32"),
+        player("D24", "Sutton, Trey", "WR", "DEN", "15"),
+        player("D25", "Cole, Darius", "WR", "GBP", "80"),
+        player("D26", "Ellis, Rashad", "WR", "ARI", "19"),
+        player("D27", "Pratt, Owen", "TE", "BAL", "85"),
+        player("D28", "Navarro, Luis", "PK", "DAL", "4"),
         player("D29", "Chiefs, Kansas City", "Def", "KCC"),
-        player("D30", "Holt, Gavin", "QB", "JAC"),
-        player("D31", "Mercer, Ty", "RB", "NEP"),
-        player("D32", "Quinn, Elias", "WR", "MIN"),
+        player("D30", "Holt, Gavin", "QB", "JAC", "7"),
+        player("D31", "Mercer, Ty", "RB", "NEP", "34"),
+        player("D32", "Quinn, Elias", "WR", "MIN", "18"),
         // Unrostered, but named in plays
-        player("D40", "Grady, Thomas", "QB", "SFO"),
-        player("D41", "Monroe, Kendrick", "CB", "SEA"),
-        player("D42", "Okafor, Victor", "DE", "BUF"),
-        player("D43", "Reyes, Mateo", "QB", "PHI"),
-        player("D44", "Lindqvist, Erik", "LB", "DAL"),
+        player("D40", "Grady, Thomas", "QB", "SFO", "12"),
+        player("D41", "Monroe, Kendrick", "CB", "SEA", "24"),
+        player("D42", "Okafor, Victor", "DE", "BUF", "97"),
+        player("D43", "Reyes, Mateo", "QB", "PHI", "5"),
+        player("D44", "Lindqvist, Erik", "LB", "DAL", "54"),
     ])
 
     // MARK: Fantasy scoring
@@ -151,6 +154,51 @@ enum DemoData {
             "D31": lines([("1", rushTD, 6.00), ("48", rushYds, 4.80), ("3", rec, 3.00)]),
         ])
     }()
+
+    // MARK: Injuries and news
+
+    /// A few designations from before kickoff, one that changed at halftime, and a player
+    /// hurt on a play who hasn't come back.
+    static var injuries: InjuryTracker {
+        var tracker = InjuryTracker()
+        var reports = [
+            "D06": InjuryReport(status: "Questionable", details: "Ankle"),
+            "D25": InjuryReport(status: "Questionable", details: "Hamstring"),
+            "D27": InjuryReport(status: "Doubtful", details: "Knee"),
+            "D11": InjuryReport(status: "Out", details: "Hamstring"),
+        ]
+        tracker.ingest(mfl: reports) { _ in true }
+        reports["D05"] = InjuryReport(status: "Questionable", details: "Shoulder")
+        tracker.ingest(mfl: reports) { _ in true }
+        tracker.ingest(plays: [
+            Play(id: "demo-injury", sequence: 1, kind: .other,
+                 text: "M.Reyes pass short right to M.Hale to DAL 41 for 6 yards (E.Lindqvist). PHI-M.Hale was injured during the play.",
+                 period: 2, clock: "3:05"),
+        ], gameID: philadelphiaDallas.id)
+        return tracker
+    }
+
+    static func news(for player: FantasyPlayer) -> [PlayerNewsItem] {
+        let last = player.name.split(separator: ",").first.map(String.init) ?? player.name
+        var items: [PlayerNewsItem] = []
+        let status = injuries.status(for: player, gameID: games.first { $0.teams.contains(player.team) }?.id)
+        if status.changedInGame {
+            items.append(PlayerNewsItem(
+                id: "\(player.id)-injury", headline: "\(last) is questionable to return to Sunday's game.",
+                body: "\(last) headed to the medical tent after taking a hit and was later seen jogging on the sideline. Consider him day-to-day until the team says more.",
+                published: now.addingTimeInterval(-240), source: "Rotowire"))
+        } else if let report = status.report {
+            items.append(PlayerNewsItem(
+                id: "\(player.id)-report", headline: "\(last) (\(report.details?.lowercased() ?? "undisclosed")) is listed as \(report.status.lowercased()) for Sunday.",
+                body: "\(last) was limited in practice all week. A decision is expected closer to kickoff.",
+                published: now.addingTimeInterval(-26 * 3600), source: "Rotowire"))
+        }
+        items.append(PlayerNewsItem(
+            id: "\(player.id)-recap", headline: "\(last) turned in a steady performance in last week's win.",
+            body: "He has been a reliable weekly starter and remains one for this matchup.",
+            published: now.addingTimeInterval(-7 * 86_400), source: "Rotowire"))
+        return items
+    }
 
     // MARK: NFL games
 

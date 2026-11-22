@@ -6,12 +6,19 @@ public struct FantasyPlayer: Sendable, Equatable, Hashable {
     public var name: String       // MFL style: "Chase, Ja'Marr"; defenses are "Bills, Buffalo"
     public var position: String
     public var team: NFLTeam
+    /// Jersey number, when MFL has one.
+    public var jersey: String?
+    /// ESPN's athlete ID, for matching ESPN's injuries and news. Team defenses have none.
+    public var espnID: String?
 
-    public init(id: String, name: String, position: String, team: NFLTeam) {
+    public init(id: String, name: String, position: String, team: NFLTeam,
+                jersey: String? = nil, espnID: String? = nil) {
         self.id = id
         self.name = name
         self.position = position
         self.team = team
+        self.jersey = jersey
+        self.espnID = espnID
     }
 
     public var isTeamDefense: Bool { position == "Def" || position == "ST" || position == "Off" }
@@ -35,7 +42,10 @@ public struct PlayerDatabase: Decodable, Sendable {
 
     private struct Wire: Decodable {
         struct Players: Decodable { let player: OneOrMany<Row> }
-        struct Row: Decodable { let id: String; let name: String; let position: String; let team: String }
+        struct Row: Decodable {
+            let id: String; let name: String; let position: String; let team: String
+            let jersey: String?; let espn_id: String?
+        }
         let players: Players
     }
 
@@ -45,7 +55,11 @@ public struct PlayerDatabase: Decodable, Sendable {
 
     public init(from decoder: Decoder) throws {
         let rows = try Wire(from: decoder).players.player.values
-        self.init(players: rows.map { FantasyPlayer(id: $0.id, name: $0.name, position: $0.position, team: NFLTeam(mfl: $0.team)) })
+        self.init(players: rows.map { 
+            FantasyPlayer(id: $0.id, name: $0.name, position: $0.position, team: NFLTeam(mfl: $0.team),
+                          jersey: $0.jersey.flatMap { $0.isEmpty ? nil : $0 },
+                          espnID: $0.espn_id.flatMap { $0.isEmpty ? nil : $0 })
+        })
     }
 }
 
@@ -71,7 +85,7 @@ public struct PlayerNames: Sendable {
         byLastName = index
     }
 
-    private static func withoutSuffix(_ name: String) -> String {
+    static func withoutSuffix(_ name: String) -> String {
         for suffix in [" jr.", " jr", " sr.", " sr", " ii", " iii", " iv", " v"] where name.hasSuffix(suffix) {
             return String(name.dropLast(suffix.count))
         }

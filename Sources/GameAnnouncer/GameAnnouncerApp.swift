@@ -38,7 +38,7 @@ struct GameAnnouncerApp: App {
               let unbundled = UserDefaults(suiteName: "GameAnnouncer"),
               unbundled.string(forKey: "leagueID") != nil
         else { return }
-        for key in ["leagueID", "franchiseID", "scope", "muted", "mutedCategories", "voice"] {
+        for key in ["leagueID", "franchiseID", "scope", "muted", "mutedCategories", "voice", "showJerseyNumbers"] {
             if let value = unbundled.object(forKey: key) { defaults.set(value, forKey: key) }
         }
     }

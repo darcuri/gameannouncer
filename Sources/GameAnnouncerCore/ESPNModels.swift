@@ -70,9 +70,36 @@ public struct ESPNSummary: Decodable, Sendable {
         public let text: String
     }
 
+    /// One team's injury list. It updates during the game.
+    public struct TeamInjuries: Decodable, Sendable {
+        public struct Entry: Decodable, Sendable {
+            public struct Athlete: Decodable, Sendable { public let id: String? }
+            public struct Details: Decodable, Sendable { public let type: String?; public let detail: String? }
+            public let status: String?
+            public let date: String?
+            public let athlete: Athlete?
+            public let details: Details?
+        }
+        public let injuries: [Entry]?
+    }
+
     public let header: Header
     public let drives: Drives?
     public let scoringPlays: [ScoringPlay]?
+    public let injuries: [TeamInjuries]?
+
+    /// Injury designations for both teams, by ESPN athlete ID.
+    public var injuryReports: [String: InjuryReport] {
+        var result: [String: InjuryReport] = [:]
+        for entry in (injuries ?? []).flatMap({ $0.injuries ?? [] }) {
+            guard let id = entry.athlete?.id, let status = entry.status, !status.isEmpty else { continue }
+            let details = [entry.details?.type, entry.details?.detail]
+                .compactMap { $0 }.filter { !$0.isEmpty && $0 != "Not Specified" }
+            result[id] = InjuryReport(status: status, details: details.isEmpty ? nil : details.joined(separator: ", "),
+                                      updated: entry.date.flatMap(ESPNEvent.parseDate))
+        }
+        return result
+    }
 
     public var eventID: String { header.id }
 
@@ -169,7 +196,7 @@ extension ESPNEvent {
         )
     }
 
-    private static func parseDate(_ s: String) -> Date? {
+    static func parseDate(_ s: String) -> Date? {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
         f.timeZone = TimeZone(identifier: "UTC")
